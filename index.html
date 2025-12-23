@@ -533,7 +533,7 @@
             <h1>JSON Sanitizer</h1>
             <p class="subtitle">n8n workflow JSON. Bez niespodzianek.</p>
         </div>
-
+        
         <div class="info-banner">
             <span>●</span>
             <span><strong>Lokalne przetwarzanie.</strong> Dane nie opuszczają przeglądarki.</span>
@@ -561,7 +561,7 @@
                     <span id="inputStatus" class="status"></span>
                 </div>
                 <textarea id="jsonInput" placeholder="JSON czeka."></textarea>
-            </div>
+        </div>
 
             <div class="panel">
                 <div class="panel-header">
@@ -584,15 +584,15 @@
 
         <div class="options-bar" id="optionsBar">
             <div class="option-group">
-                <input type="checkbox" id="formatCheckbox" checked>
+                    <input type="checkbox" id="formatCheckbox" checked>
                 <label for="formatCheckbox">Formatuj JSON</label>
             </div>
             <div class="option-group">
-                <input type="checkbox" id="autoSaveCheckbox" checked>
+                    <input type="checkbox" id="autoSaveCheckbox" checked>
                 <label for="autoSaveCheckbox">Auto-save</label>
             </div>
             <div class="option-group">
-                <input type="checkbox" id="n8nExportMode" checked>
+                    <input type="checkbox" id="n8nExportMode" checked>
                 <label for="n8nExportMode">Tryb n8n</label>
             </div>
             <div class="option-group">
@@ -616,12 +616,12 @@
         <div id="n8nInfo" class="n8n-info">
             <h3>Workflow n8n</h3>
             <div class="n8n-info-grid">
-                <div class="n8n-info-item"><strong>Nazwa:</strong> <span id="n8nName">-</span></div>
-                <div class="n8n-info-item"><strong>Węzły:</strong> <span id="n8nNodes">-</span></div>
-                <div class="n8n-info-item"><strong>Połączenia:</strong> <span id="n8nConnections">-</span></div>
-                <div class="n8n-info-item"><strong>Wersja:</strong> <span id="n8nVersion">-</span></div>
-                <div class="n8n-info-item"><strong>Aktywne:</strong> <span id="n8nActive">-</span></div>
-            </div>
+            <div class="n8n-info-item"><strong>Nazwa:</strong> <span id="n8nName">-</span></div>
+            <div class="n8n-info-item"><strong>Węzły:</strong> <span id="n8nNodes">-</span></div>
+            <div class="n8n-info-item"><strong>Połączenia:</strong> <span id="n8nConnections">-</span></div>
+            <div class="n8n-info-item"><strong>Wersja:</strong> <span id="n8nVersion">-</span></div>
+            <div class="n8n-info-item"><strong>Aktywne:</strong> <span id="n8nActive">-</span></div>
+        </div>
         </div>
 
         <div class="info-section">
@@ -685,6 +685,25 @@
             }
         });
 
+        function updateOfflineStatus() {
+            const offlineStatus = document.getElementById('offlineStatus');
+            if (offlineModeCheckbox.checked) {
+                offlineStatus.style.display = 'inline';
+                offlineStatus.textContent = 'Offline';
+            } else {
+                offlineStatus.style.display = 'none';
+            }
+        }
+
+        offlineModeCheckbox.addEventListener('change', () => {
+            updateOfflineStatus();
+            if (!offlineModeCheckbox.checked) {
+                showMessage('Tryb online włączony', false);
+            } else {
+                showMessage('Tryb offline włączony', false);
+            }
+        });
+
         function updatePlaceholder() {
             const content = jsonInput.value.trim();
             if (!content) {
@@ -693,7 +712,7 @@
                 try {
                     JSON.parse(content);
                     jsonInput.placeholder = 'Wklej JSON do naprawy...';
-                } catch (e) {
+            } catch (e) {
                     jsonInput.placeholder = 'Tego nie da się bezpiecznie naprawić.';
                 }
             }
@@ -728,7 +747,7 @@
                     JSON.parse(outputContent);
                     outputStatus.textContent = 'VALID';
                     outputStatus.className = 'status valid';
-                } catch (e) {
+            } catch (e) {
                     outputStatus.textContent = 'INVALID';
                     outputStatus.className = 'status invalid';
                 }
@@ -923,33 +942,33 @@
             hideFeedback();
 
             setTimeout(() => {
-                try {
-                    JSON.parse(content);
+            try {
+                JSON.parse(content);
                     fixJSON(content, true);
-                } catch (jsonError) {
-                    const detection = detectContentType(content);
-                    
-                    if (detection.type === 'js') {
-                        try {
-                            const formatted = formatJavaScript(content);
-                            jsonInput.value = formatted;
+            } catch (jsonError) {
+                const detection = detectContentType(content);
+                
+                if (detection.type === 'js') {
+                    try {
+                        const formatted = formatJavaScript(content);
+                        jsonInput.value = formatted;
                             jsonOutput.value = formatted;
                             fixedJSON = formatted;
                             showMessage('Kod JavaScript sformatowany');
-                            jsonInput.classList.remove('error');
+                        jsonInput.classList.remove('error');
                             showFeedback('Kod JavaScript sformatowany');
-                        } catch (e) {
+                    } catch (e) {
                             showMessage('Błąd formatowania JavaScript: ' + e.message, true);
                             showFeedback('Błąd formatowania JavaScript', true);
-                        }
+                    }
                         mainBtn.disabled = false;
                         mainBtn.textContent = 'Napraw JSON';
                         updateStatus();
-                        return;
-                    }
+                    return;
+                }
 
                     fixJSON(content, false);
-                }
+            }
 
                 mainBtn.disabled = false;
                 mainBtn.textContent = 'Napraw JSON';
@@ -963,23 +982,23 @@
             let fixCount = 0;
 
             if (wasValid) {
-                try {
-                    const alreadyParsed = JSON.parse(fixed);
-                    fixed = formatCheckbox.checked 
-                        ? JSON.stringify(alreadyParsed, null, 2)
-                        : JSON.stringify(alreadyParsed);
-                    
+            try {
+                const alreadyParsed = JSON.parse(fixed);
+                fixed = formatCheckbox.checked 
+                    ? JSON.stringify(alreadyParsed, null, 2)
+                    : JSON.stringify(alreadyParsed);
+                
                     fixedJSON = fixed;
                     jsonOutput.value = fixed;
-                    jsonInput.value = fixed;
-                    jsonInput.classList.remove('error');
-                    updateStats();
-                    saveToLocalStorage();
+                jsonInput.value = fixed;
+                jsonInput.classList.remove('error');
+                updateStats();
+                saveToLocalStorage();
                     showMessage('JSON był już poprawny - sformatowano');
                     showFeedback('JSON był już poprawny - sformatowano');
                     showStatusBar('JSON był poprawny – brak zmian.', 'info');
                     return;
-                } catch (e) {
+            } catch (e) {
                     // Kontynuuj naprawę
                 }
             }
@@ -1180,24 +1199,24 @@
                 }
                 
                 if (i + 8 <= fixed.length && fixed.substr(i, 8) === 'undefined') {
-                    result += 'null';
+                        result += 'null';
                     i += 7;
                     jsValuesFixed = true;
-                    continue;
+                        continue;
                 }
                 
                 if (i + 3 <= fixed.length && fixed.substr(i, 3) === 'NaN') {
-                    result += 'null';
-                    i += 2;
+                        result += 'null';
+                        i += 2;
                     jsValuesFixed = true;
-                    continue;
+                        continue;
                 }
                 
                 if (i + 8 <= fixed.length && fixed.substr(i, 8) === 'Infinity') {
-                    result += 'null';
-                    i += 7;
+                        result += 'null';
+                        i += 7;
                     jsValuesFixed = true;
-                    continue;
+                        continue;
                 }
                 
                 result += char;
@@ -1218,37 +1237,37 @@
                 try {
                     const parsed = JSON.parse(fixed);
                     fixed = JSON.stringify(parsed, null, formatCheckbox.checked ? 2 : 0);
-                } catch (e) {
+            } catch (e) {
                     // Ignoruj błędy strict mode
                 }
             }
 
             try {
                 const parsed = JSON.parse(fixed);
-                fixed = formatCheckbox.checked 
-                    ? JSON.stringify(parsed, null, 2)
-                    : JSON.stringify(parsed);
-                
+                        fixed = formatCheckbox.checked 
+                            ? JSON.stringify(parsed, null, 2)
+                            : JSON.stringify(parsed);
+                        
                 fixedJSON = fixed;
                 jsonOutput.value = fixed;
-                jsonInput.value = fixed;
-                jsonInput.classList.remove('error');
-                updateStats();
-                saveToLocalStorage();
+                        jsonInput.value = fixed;
+                        jsonInput.classList.remove('error');
+                        updateStats();
+                        saveToLocalStorage();
                 
                 if (fixCount === 0) {
                     showMessage('JSON był już poprawny - sformatowano');
                     showFeedback('JSON był już poprawny - sformatowano');
                     showStatusBar('JSON był poprawny – brak zmian.', 'info');
-                } else {
+                    } else {
                     const fixText = fixCount === 1 ? 'problem' : 'problemów';
                     const fixesText = fixes.length > 0 ? ': ' + fixes.join(', ') : '';
                     showMessage(`Naprawiono ${fixCount} ${fixText}. JSON zgodny z n8n.`);
                     showFeedback(`Naprawiono ${fixCount} ${fixText}${fixesText}. JSON zgodny z n8n.`);
                     showStatusBar(`Naprawiono ${fixCount} ${fixText}.`, 'success');
                 }
-            } catch (e) {
-                jsonInput.classList.add('error');
+                    } catch (e) {
+                        jsonInput.classList.add('error');
                 showMessage('Tego nie da się bezpiecznie naprawić: ' + e.message, true);
                 showFeedback('Tego nie da się bezpiecznie naprawić.', true);
                 showStatusBar('Części nie dało się naprawić.', 'warning');
@@ -1272,18 +1291,18 @@
             const content = jsonOutput.value.trim() || jsonInput.value.trim();
             if (!content) {
                 showMessage('Brak danych do pobrania', true);
-                return;
+                    return;
             }
 
             try {
                 JSON.parse(content);
                 const blob = new Blob([content], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
                 a.download = 'workflow.json';
-                a.click();
-                URL.revokeObjectURL(url);
+            a.click();
+            URL.revokeObjectURL(url);
                 showMessage('Pobrano plik');
             } catch (e) {
                 showMessage('Błąd: niepoprawny JSON', true);
@@ -1331,7 +1350,7 @@
         function clearInput() {
             jsonInput.value = '';
             jsonOutput.value = '';
-            jsonInput.classList.remove('error');
+                jsonInput.classList.remove('error');
             originalJSON = '';
             fixedJSON = '';
             diffView.classList.remove('show');
