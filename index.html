@@ -147,12 +147,24 @@
             color: #666;
         }
 
+        #jsonInput {
+            background: #0f0f0f;
+            border-color: #2a2a2a;
+        }
+
+        #jsonInput:focus {
+            border-color: #4a4a4a;
+            background: #0f0f0f;
+        }
+
         #jsonOutput {
             background: #0a0a0a;
+            border-color: #252525;
         }
 
         #jsonOutput:focus {
-            border-color: #4a4a4a;
+            border-color: #3a3a3a;
+            background: #0a0a0a;
         }
 
         .actions-secondary {
@@ -183,6 +195,13 @@
 
         .btn-secondary:active {
             background: #0f0f0f;
+        }
+
+        .btn-secondary.active {
+            background: #1a1a1a;
+            border-color: #4a9;
+            color: #4a9;
+            text-decoration: underline;
         }
 
         .info-banner {
@@ -406,6 +425,13 @@
             display: block;
         }
 
+        .diff-empty {
+            padding: 16px;
+            text-align: center;
+            color: #888;
+            font-size: 11px;
+        }
+
         .diff-line {
             padding: 2px 8px;
             font-family: inherit;
@@ -430,10 +456,11 @@
             padding: 10px 12px;
             background: #151515;
             border: 1px solid #2a2a2a;
-            font-size: 10px;
+            font-size: 11px;
             color: #aaa;
             margin-bottom: 20px;
             display: none;
+            line-height: 1.5;
         }
 
         .feedback.show {
@@ -448,6 +475,41 @@
         .feedback.success {
             border-color: #4a9;
             color: #4a9;
+        }
+
+        .feedback.info {
+            border-color: #4a9;
+            color: #aaa;
+        }
+
+        .status-bar {
+            padding: 10px 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 20px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .status-bar.show {
+            display: block;
+        }
+
+        .status-bar.success {
+            border-color: #4a9;
+            color: #4a9;
+        }
+
+        .status-bar.info {
+            border-color: #4a9;
+            color: #aaa;
+        }
+
+        .status-bar.warning {
+            border-color: #fa4;
+            color: #fa4;
         }
 
         @media (max-width: 768px) {
@@ -476,6 +538,7 @@
             <span>●</span>
             <span><strong>Lokalne przetwarzanie.</strong> Dane nie opuszczają przeglądarki.</span>
             <span id="autosaveStatus" style="display: none; margin-left: auto; color: #888;">Auto-save</span>
+            <span id="offlineStatus" style="margin-left: auto; color: #4a9;">Offline</span>
         </div>
 
         <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
@@ -485,9 +548,10 @@
         </div>
 
         <div class="main-action">
-            <button class="btn-main" onclick="formatOrFix()" id="mainBtn">Napraw JSON</button>
+            <button class="btn-main" onclick="formatOrFix()" id="mainBtn" title="Ctrl/Cmd + Enter">Napraw JSON</button>
         </div>
 
+        <div id="statusBar" class="status-bar"></div>
         <div id="feedback" class="feedback"></div>
 
         <div class="workspace">
@@ -535,6 +599,10 @@
                 <input type="checkbox" id="strictN8N">
                 <label for="strictN8N">Strict n8n JSON</label>
             </div>
+            <div class="option-group">
+                <input type="checkbox" id="offlineMode" checked>
+                <label for="offlineMode">Offline mode (default)</label>
+            </div>
         </div>
 
         <div id="diffView" class="diff-view"></div>
@@ -575,12 +643,14 @@
         const autoSaveCheckbox = document.getElementById('autoSaveCheckbox');
         const n8nExportModeCheckbox = document.getElementById('n8nExportMode');
         const strictN8NCheckbox = document.getElementById('strictN8N');
+        const offlineModeCheckbox = document.getElementById('offlineMode');
         const stats = document.getElementById('stats');
         const mainBtn = document.getElementById('mainBtn');
         const inputStatus = document.getElementById('inputStatus');
         const outputStatus = document.getElementById('outputStatus');
         const diffView = document.getElementById('diffView');
         const diffBtn = document.getElementById('diffBtn');
+        const statusBar = document.getElementById('statusBar');
         let originalJSON = '';
         let fixedJSON = '';
 
@@ -588,6 +658,7 @@
             jsonInput.value = '';
             updateStatus();
             updateAutosaveStatus();
+            updateOfflineStatus();
             updatePlaceholder();
         });
 
@@ -694,6 +765,15 @@
             feedback.className = 'feedback';
         }
 
+        function showStatusBar(text, type = 'info') {
+            statusBar.textContent = text;
+            statusBar.className = 'status-bar show ' + type;
+        }
+
+        function hideStatusBar() {
+            statusBar.className = 'status-bar';
+        }
+
         function saveToLocalStorage() {
             if (autoSaveCheckbox.checked) {
                 localStorage.setItem('jsonEditor_data', jsonInput.value);
@@ -710,11 +790,24 @@
                 showMessage('Brak danych do porównania', true);
                 return;
             }
+            
+            const hasChanges = originalJSON !== fixedJSON;
+            
+            if (!hasChanges) {
+                diffView.innerHTML = '<div class="diff-empty">Brak różnic do pokazania.</div>';
+                diffView.classList.add('show');
+                diffBtn.classList.add('active');
+                diffBtn.textContent = 'Ukryj zmiany';
+                return;
+            }
+            
             diffView.classList.toggle('show');
             if (diffView.classList.contains('show')) {
                 showDiff(originalJSON, fixedJSON);
+                diffBtn.classList.add('active');
                 diffBtn.textContent = 'Ukryj zmiany';
             } else {
+                diffBtn.classList.remove('active');
                 diffBtn.textContent = 'Pokaż zmiany';
             }
         }
@@ -884,6 +977,7 @@
                     saveToLocalStorage();
                     showMessage('JSON był już poprawny - sformatowano');
                     showFeedback('JSON był już poprawny - sformatowano');
+                    showStatusBar('JSON był poprawny – brak zmian.', 'info');
                     return;
                 } catch (e) {
                     // Kontynuuj naprawę
@@ -1145,16 +1239,19 @@
                 if (fixCount === 0) {
                     showMessage('JSON był już poprawny - sformatowano');
                     showFeedback('JSON był już poprawny - sformatowano');
+                    showStatusBar('JSON był poprawny – brak zmian.', 'info');
                 } else {
                     const fixText = fixCount === 1 ? 'problem' : 'problemów';
                     const fixesText = fixes.length > 0 ? ': ' + fixes.join(', ') : '';
                     showMessage(`Naprawiono ${fixCount} ${fixText}. JSON zgodny z n8n.`);
                     showFeedback(`Naprawiono ${fixCount} ${fixText}${fixesText}. JSON zgodny z n8n.`);
+                    showStatusBar(`Naprawiono ${fixCount} ${fixText}.`, 'success');
                 }
             } catch (e) {
                 jsonInput.classList.add('error');
                 showMessage('Tego nie da się bezpiecznie naprawić: ' + e.message, true);
                 showFeedback('Tego nie da się bezpiecznie naprawić.', true);
+                showStatusBar('Części nie dało się naprawić.', 'warning');
             }
         }
 
@@ -1238,8 +1335,11 @@
             originalJSON = '';
             fixedJSON = '';
             diffView.classList.remove('show');
+            diffView.innerHTML = '';
+            diffBtn.classList.remove('active');
             diffBtn.textContent = 'Pokaż zmiany';
             hideFeedback();
+            hideStatusBar();
             updateStatus();
             updateStats();
             localStorage.removeItem('jsonEditor_data');
