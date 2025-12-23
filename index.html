@@ -13,20 +13,20 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f8f9fa;
+            background: #1a1a1a;
             min-height: 100vh;
             padding: 0;
-            color: #1a1a1a;
+            color: #e5e5e5;
             line-height: 1.6;
         }
 
         .container {
-            background: white;
+            background: #2d2d2d;
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
             min-height: 100vh;
-            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         @keyframes fadeIn {
@@ -41,17 +41,17 @@
         }
 
         .header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
+            background: #252525;
+            border-bottom: 1px solid #404040;
             padding: 24px 32px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         h1 {
-            color: #111827;
+            color: #ffffff;
             margin: 0 0 4px 0;
             font-size: 28px;
             font-weight: 700;
@@ -59,20 +59,20 @@
         }
 
         .subtitle {
-            color: #6b7280;
+            color: #a0a0a0;
             margin: 0;
             font-size: 14px;
             font-weight: 400;
         }
 
         .info-banner {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
+            background: #1e3a5f;
+            border: 1px solid #2d5a8a;
             padding: 12px 16px;
             border-radius: 6px;
             margin: 0 32px 24px 32px;
             font-size: 13px;
-            color: #1e40af;
+            color: #a8d0ff;
             line-height: 1.6;
             display: flex;
             align-items: center;
@@ -100,7 +100,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 8px;
-            color: #374151;
+            color: #b0b0b0;
             font-weight: 600;
             font-size: 13px;
             text-transform: uppercase;
@@ -111,56 +111,57 @@
             width: 100%;
             min-height: 500px;
             padding: 16px;
-            border: 1px solid #d1d5db;
+            border: 1px solid #404040;
             border-radius: 8px;
             font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.6;
             resize: vertical;
             transition: all 0.2s ease;
-            background: #ffffff;
-            color: #111827;
+            background: #1e1e1e;
+            color: #d4d4d4;
         }
 
         textarea:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
         }
 
         #jsonOutput {
-            background: #f9fafb;
-            border-color: #e5e7eb;
+            background: #252525;
+            border-color: #404040;
         }
 
         #jsonOutput:focus {
-            background: #ffffff;
+            background: #1e1e1e;
         }
 
         textarea.error {
             border-color: #ef4444;
-            background-color: #fef2f2;
+            background-color: #3d1f1f;
         }
 
         .filename-input {
             width: 100%;
             padding: 10px 14px;
-            border: 1px solid #d1d5db;
+            border: 1px solid #404040;
             border-radius: 6px;
             font-size: 13px;
             transition: all 0.2s ease;
-            background: white;
+            background: #1e1e1e;
+            color: #d4d4d4;
         }
 
         .filename-input:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
         }
 
         .actions-bar {
-            background: #f9fafb;
-            border-top: 1px solid #e5e7eb;
+            background: #252525;
+            border-top: 1px solid #404040;
             padding: 20px 32px;
             display: flex;
             gap: 12px;
@@ -199,26 +200,26 @@
         }
 
         .btn-primary {
-            background: #3b82f6;
+            background: #4a9eff;
             color: white;
-            border-color: #3b82f6;
+            border-color: #4a9eff;
         }
 
         .btn-primary:hover {
-            background: #2563eb;
-            border-color: #2563eb;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            background: #3a8eef;
+            border-color: #3a8eef;
+            box-shadow: 0 4px 6px -1px rgba(74, 158, 255, 0.4);
         }
 
         .btn-secondary {
-            background: white;
-            color: #374151;
-            border-color: #d1d5db;
+            background: #3a3a3a;
+            color: #e5e5e5;
+            border-color: #505050;
         }
 
         .btn-secondary:hover {
-            background: #f9fafb;
-            border-color: #9ca3af;
+            background: #454545;
+            border-color: #606060;
         }
 
         .btn-success {
@@ -230,7 +231,7 @@
         .btn-success:hover {
             background: #059669;
             border-color: #059669;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
         }
 
         .btn-danger {
@@ -284,24 +285,25 @@
 
         .info {
             padding: 24px 32px;
-            background: #f9fafb;
-            border-top: 1px solid #e5e7eb;
+            background: #252525;
+            border-top: 1px solid #404040;
             font-size: 12px;
-            color: #6b7280;
+            color: #a0a0a0;
             line-height: 1.7;
         }
 
         .info strong {
-            color: #111827;
+            color: #e5e5e5;
             font-weight: 600;
         }
 
         .info code {
-            background: #e5e7eb;
+            background: #1e1e1e;
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 11px;
             font-family: 'SF Mono', 'Monaco', monospace;
+            color: #d4d4d4;
         }
 
         .file-drop-zone {
@@ -333,8 +335,8 @@
         }
 
         .options-bar {
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
+            background: #252525;
+            border-bottom: 1px solid #404040;
             padding: 12px 32px;
             display: flex;
             gap: 24px;
@@ -354,7 +356,7 @@
             gap: 6px;
             cursor: pointer;
             font-size: 13px;
-            color: #6b7280;
+            color: #b0b0b0;
             font-weight: 400;
             text-transform: none;
             letter-spacing: 0;
@@ -372,41 +374,41 @@
             display: flex;
             gap: 24px;
             padding: 16px 32px;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
+            background: #252525;
+            border-bottom: 1px solid #404040;
             font-size: 13px;
             flex-wrap: wrap;
         }
 
         .stat-item {
-            color: #6b7280;
+            color: #a0a0a0;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
         .stat-item strong {
-            color: #111827;
+            color: #e5e5e5;
             font-weight: 600;
         }
 
         .btn-fix {
-            background: #10b981;
+            background: #ff6d5a;
             color: white;
-            border-color: #10b981;
+            border-color: #ff6d5a;
             font-weight: 600;
         }
 
         .btn-fix:hover {
-            background: #059669;
-            border-color: #059669;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            background: #ff5a47;
+            border-color: #ff5a47;
+            box-shadow: 0 4px 6px -1px rgba(255, 109, 90, 0.4);
         }
 
         .n8n-info {
             padding: 16px 32px;
-            background: #fef3c7;
-            border-bottom: 1px solid #fde68a;
+            background: #3d2e1f;
+            border-bottom: 1px solid #5a4530;
             font-size: 13px;
             display: none;
         }
@@ -417,7 +419,7 @@
 
         .n8n-info h3 {
             margin: 0 0 12px 0;
-            color: #92400e;
+            color: #ffb366;
             font-size: 14px;
             font-weight: 600;
         }
@@ -429,29 +431,30 @@
         }
 
         .n8n-info-item {
-            color: #78350f;
+            color: #d4a574;
         }
 
         .n8n-info-item strong {
-            color: #92400e;
+            color: #ffb366;
             font-weight: 600;
         }
 
         .template-select {
             width: 100%;
             padding: 10px 14px;
-            border: 1px solid #d1d5db;
+            border: 1px solid #404040;
             border-radius: 6px;
             font-size: 13px;
-            background: white;
+            background: #1e1e1e;
+            color: #d4d4d4;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .template-select:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
         }
 
         .content-type-indicator {
@@ -465,18 +468,18 @@
         }
 
         .content-type-indicator.json {
-            background: #d1fae5;
-            color: #065f46;
+            background: #10b981;
+            color: white;
         }
 
         .content-type-indicator.js {
-            background: #fef3c7;
-            color: #92400e;
+            background: #ffb366;
+            color: #1a1a1a;
         }
 
         .content-type-indicator.unknown {
-            background: #e5e7eb;
-            color: #374151;
+            background: #505050;
+            color: #e5e5e5;
         }
 
         /* RESPONSIVE - MOBILE FIRST */
@@ -739,8 +742,7 @@
 
         <div class="info" id="infoSection" style="display: none;">
             <strong>🔧 Co naprawia funkcja "Napraw i Formatuj":</strong><br>
-            • Pythonowe wartości: <code>True</code> → <code>true</code>, <code>False</code> → <code>false</code>, <code>None</code> → <code>null</code><br>
-            • Pojedyncze cudzysłowy: <code>'value'</code> → <code>"value"</code><br>
+            • Pojedyncze cudzysłowy w kluczach: <code>'key'</code> → <code>"key"</code><br>
             • Brakujące cudzysłowy przy kluczach: <code>klucz:</code> → <code>"klucz":</code><br>
             • Komentarze: <code>// komentarz</code> i <code>/* blok */</code><br>
             • Trailing commas: <code>["a", "b",]</code> → <code>["a", "b"]</code><br>
