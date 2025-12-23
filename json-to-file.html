@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n8n Workflow Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .info-banner {
+            background: #f0f7ff;
+            border-left: 4px solid #4a90e2;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #2c5282;
+            line-height: 1.6;
+        }
+
+        .info-banner strong {
+            color: #1a365d;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: white;
+        }
+
+        textarea.error {
+            border-color: #e74c3c;
+            background-color: #fee;
+        }
+
+        .filename-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .filename-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-download {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #357abd;
+        }
+
+        .btn-download:active {
+            transform: translateY(0);
+        }
+
+        .btn-download:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-validate {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-validate:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-clear {
+            background: #fff;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-clear:hover {
+            background: #f5f5f5;
+        }
+
+        .message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.7;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .info strong {
+            color: #333;
+        }
+
+        .file-drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: #fafafa;
+        }
+
+        .file-drop-zone:hover, .file-drop-zone.dragover {
+            border-color: #4a90e2;
+            background: #f0f7ff;
+        }
+
+        .file-drop-zone p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .option-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .option-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .option-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            color: #666;
+        }
+
+        .stat-item strong {
+            color: #333;
+        }
+
+        .btn-copy {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #218838;
+        }
+
+        .btn-n8n {
+            background: #ff6d5a;
+            color: white;
+        }
+
+        .btn-n8n:hover {
+            background: #e55a47;
+        }
+
+        .btn-fix {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-fix:hover {
+            background: #138496;
+        }
+
+        .n8n-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3e0;
+            border-left: 4px solid #ff6d5a;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .n8n-info.show {
+            display: block;
+        }
+
+        .n8n-info h3 {
+            margin: 0 0 10px 0;
+            color: #ff6d5a;
+            font-size: 16px;
+        }
+
+        .n8n-info-item {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .n8n-info-item strong {
+            color: #333;
+        }
+
+        .template-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .template-select:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .content-type-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .content-type-indicator.json {
+            background: #28a745;
+            color: white;
+        }
+
+        .content-type-indicator.js {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .content-type-indicator.unknown {
+            background: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>n8n Helper</h1>
+        <p class="subtitle">Napraw błędne dane JSON i zarządzaj workflow n8n w kilka sekund</p>
+        
+        <div class="info-banner">
+            🔒 <strong>Przetwarzane lokalnie w przeglądarce.</strong> Twoje dane nie są wysyłane na serwer.
+            <span id="autosaveStatus" style="display: none; margin-left: 15px;">💾 Auto-save włączony</span>
+        </div>
+
+        <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <p><strong>📁 Kliknij lub przeciągnij plik JSON tutaj</strong></p>
+            <p style="font-size: 12px; color: #999;">lub wpisz JSON poniżej</p>
+            <input type="file" id="fileInput" class="file-input-hidden" accept=".json,.js,application/json,text/javascript,text/plain">
+        </div>
+
+        <div class="input-group">
+            <label for="templateSelect">Szablon workflow n8n (opcjonalnie):</label>
+            <select id="templateSelect" class="template-select" onchange="loadTemplate()">
+                <option value="">-- Wybierz szablon --</option>
+                <option value="empty">Pusty workflow</option>
+                <option value="webhook">Webhook → HTTP Request</option>
+                <option value="schedule">Schedule → Task</option>
+                <option value="manual">Manual Trigger</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="jsonInput">
+                Workflow JSON (n8n):
+                <span id="contentTypeIndicator" class="content-type-indicator" style="display: none;"></span>
+            </label>
+            <textarea id="jsonInput" placeholder='Wklej tutaj workflow n8n w formacie JSON (skopiuj z n8n i wklej tutaj) lub użyj szablonu powyżej'></textarea>
+        </div>
+
+        <div class="options-row">
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="formatCheckbox" checked>
+                    <span>Formatuj JSON (pretty print)</span>
+                </label>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="autoSaveCheckbox" checked>
+                    <span>Zapisz lokalnie (auto-save)</span>
+                </label>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="n8nExportMode" checked>
+                    <span>Tryb eksportu n8n (zawsze .json)</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stat-item"><strong>Rozmiar:</strong> <span id="statSize">-</span></div>
+            <div class="stat-item"><strong>Klucze:</strong> <span id="statKeys">-</span></div>
+            <div class="stat-item"><strong>Poziomy:</strong> <span id="statDepth">-</span></div>
+        </div>
+
+        <div id="n8nInfo" class="n8n-info">
+            <h3>📊 Informacje o workflow n8n</h3>
+            <div class="n8n-info-item"><strong>Nazwa:</strong> <span id="n8nName">-</span></div>
+            <div class="n8n-info-item"><strong>Węzły:</strong> <span id="n8nNodes">-</span></div>
+            <div class="n8n-info-item"><strong>Połączenia:</strong> <span id="n8nConnections">-</span></div>
+            <div class="n8n-info-item"><strong>Wersja:</strong> <span id="n8nVersion">-</span></div>
+            <div class="n8n-info-item"><strong>Aktywne:</strong> <span id="n8nActive">-</span></div>
+        </div>
+
+        <div class="input-group">
+            <label for="filenameInput">Nazwa pliku (bez rozszerzenia):</label>
+            <input type="text" id="filenameInput" class="filename-input" placeholder="data" value="data">
+        </div>
+
+        <div class="button-group" style="flex-wrap: wrap;">
+            <button class="btn-validate" onclick="validateContent()">Waliduj JSON</button>
+            <button class="btn-fix" onclick="formatOrFix()">🔧 Formatuj/Napraw</button>
+            <button class="btn-n8n" onclick="validateN8N()">Waliduj n8n</button>
+            <button class="btn-n8n" onclick="exportToN8N()" style="background: #ff6d5a;">📥 Eksportuj do n8n</button>
+            <button class="btn-copy" onclick="copyToClipboard()">Kopiuj JSON</button>
+            <button class="btn-download" onclick="downloadJSON()">Pobierz JSON</button>
+            <button class="btn-clear" onclick="clearInput()">Wyczyść</button>
+        </div>
+        
+        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn-validate" onclick="minifyJSON()" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px;">Minifikuj JSON</button>
+            <button class="btn-validate" onclick="beautifyJSON()" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px;">Sformatuj JSON</button>
+            <button class="btn-validate" onclick="showStructure()" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px;">Pokaż strukturę</button>
+            <button class="btn-validate" onclick="restoreOriginal()" id="restoreBtn" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px; display: none;">Przywróć oryginał</button>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="info">
+            <strong>📖 SZCZEGÓŁOWA INSTRUKCJA UŻYCIA</strong><br><br>
+            
+            <strong>🎯 SCENARIUSZ 1: Eksport workflow z n8n i import z powrotem</strong><br>
+            <strong>Kiedy:</strong> Chcesz wyeksportować workflow z n8n, edytować i zaimportować z powrotem<br>
+            <strong>Kroki:</strong><br>
+            1. W n8n: Menu → Export (skopiuj JSON)<br>
+            2. Wklej JSON tutaj (Ctrl/Cmd+V)<br>
+            3. <strong>"Waliduj JSON"</strong> - sprawdź czy jest poprawny<br>
+            4. Jeśli błędy: <strong>"🔧 Formatuj/Napraw"</strong> - automatycznie naprawi<br>
+            5. <strong>"📥 Eksportuj do n8n"</strong> - pobierz plik<br>
+            6. W n8n: Menu → Import from File → wybierz pobrany plik<br><br>
+            
+            <strong>🎯 SCENARIUSZ 2: Edycja istniejącego workflow</strong><br>
+            <strong>Kiedy:</strong> Chcesz zmienić coś w workflow (np. nazwę, parametry)<br>
+            <strong>Kroki:</strong><br>
+            1. Wklej JSON z n8n<br>
+            2. Edytuj ręcznie w edytorze (np. zmień nazwę, parametry)<br>
+            3. <strong>"Waliduj JSON"</strong> - sprawdź czy nie zepsułeś składni<br>
+            4. Jeśli błędy: <strong>"🔧 Formatuj/Napraw"</strong><br>
+            5. <strong>"Waliduj n8n"</strong> - sprawdź strukturę workflow<br>
+            6. <strong>"📥 Eksportuj do n8n"</strong> - pobierz<br>
+            7. Import w n8n<br><br>
+            
+            <strong>🎯 SCENARIUSZ 3: Analiza dużego workflow</strong><br>
+            <strong>Kiedy:</strong> Chcesz szybko zobaczyć strukturę bez scrollowania<br>
+            <strong>Kroki:</strong><br>
+            1. Wklej JSON<br>
+            2. <strong>"Pokaż strukturę"</strong> - zobacz tylko klucze i typy<br>
+            3. Analizuj strukturę<br>
+            4. <strong>"Przywróć oryginał"</strong> - wróć do pełnego JSON<br>
+            5. Edytuj jeśli potrzeba<br>
+            6. Eksportuj<br><br>
+            
+            <strong>🎯 SCENARIUSZ 4: Naprawa uszkodzonego JSON</strong><br>
+            <strong>Kiedy:</strong> Masz JSON z błędami (komentarze, brakujące przecinki, itp.)<br>
+            <strong>Kroki:</strong><br>
+            1. Wklej uszkodzony JSON<br>
+            2. <strong>"Waliduj JSON"</strong> - zobacz błąd<br>
+            3. <strong>"🔧 Formatuj/Napraw"</strong> - automatyczna naprawa:<br>
+               • Usuwa komentarze (// i /* */)<br>
+               • Naprawia brakujące przecinki<br>
+               • Zamienia pojedyncze cudzysłowy na podwójne<br>
+               • Usuwa trailing commas<br>
+               • Zamienia undefined/NaN/Infinity na null<br>
+            4. Jeśli nadal błędy - sprawdź komunikat z lokalizacją<br>
+            5. Napraw ręcznie w miejscu wskazanym<br>
+            6. Powtórz walidację<br><br>
+            
+            <strong>🔍 KIEDY UŻYWAĆ JAKICH PRZYCISKÓW:</strong><br>
+            • <strong>"Waliduj JSON"</strong> - ZAWSZE przed eksportem, po edycji, gdy widzisz błąd<br>
+            • <strong>"🔧 Formatuj/Napraw"</strong> - gdy JSON ma błędy, po wklejeniu z zewnętrznego źródła<br>
+            • <strong>"Waliduj n8n"</strong> - przed eksportem do n8n, sprawdza strukturę workflow<br>
+            • <strong>"📥 Eksportuj do n8n"</strong> - gdy chcesz gotowy plik do importu (zawsze formatuje)<br>
+            • <strong>"Pobierz JSON"</strong> - gdy chcesz kontrolować formatowanie (respektuje checkbox)<br>
+            • <strong>"Kopiuj JSON"</strong> - gdy chcesz wkleić gdzie indziej<br>
+            • <strong>"Sformatuj JSON"</strong> - gdy chcesz ładnie wyświetlić (pretty print)<br>
+            • <strong>"Minifikuj JSON"</strong> - gdy chcesz zmniejszyć rozmiar pliku<br>
+            • <strong>"Pokaż strukturę"</strong> - gdy chcesz szybko przejrzeć duże workflow<br><br>
+            
+            <strong>💡 OPCJE - KIEDY WŁĄCZYĆ/WYŁĄCZYĆ:</strong><br>
+            • <strong>"Formatuj JSON"</strong> - ZAWSZE WŁĄCZONE (łatwiej czytać i edytować)<br>
+            • <strong>"Tryb eksportu n8n"</strong> - ZAWSZE WŁĄCZONE (zapewnia .json dla n8n)<br>
+            • <strong>"Zapisz lokalnie"</strong> - WŁĄCZONE jeśli chcesz auto-zapis (przydatne przy długiej edycji)<br><br>
+            
+            <strong>⚡ SKRÓTY KLAWISZOWE:</strong><br>
+            • Ctrl/Cmd + Enter = szybkie pobranie JSON<br>
+            • Przeciągnij plik .json = automatyczne wczytanie<br><br>
+            
+            <strong>🛡️ BEZPIECZEŃSTWO:</strong><br>
+            • Wszystkie naprawy są bezpieczne - nie zmieniają danych, tylko składnię<br>
+            • "Pokaż strukturę" zapisuje oryginał - możesz zawsze przywrócić<br>
+            • Auto-save zapisuje lokalnie w przeglądarce (nie wysyła nigdzie)<br><br>
+            
+            <strong>🔧 Co naprawia funkcja "Formatuj/Napraw":</strong><br>
+            • Pythonowe wartości: <code>True</code> → <code>true</code>, <code>False</code> → <code>false</code>, <code>None</code> → <code>null</code><br>
+            • Pojedyncze cudzysłowy: <code>'value'</code> → <code>"value"</code><br>
+            • Brakujące cudzysłowy przy kluczach: <code>klucz:</code> → <code>"klucz":</code><br>
+            • Komentarze: <code>// komentarz</code> i <code>/* blok */</code><br>
+            • Trailing commas: <code>["a", "b",]</code> → <code>["a", "b"]</code><br>
+            • Brakujące przecinki między właściwościami<br>
+            • JavaScript wartości: <code>undefined</code> → <code>null</code>, <code>NaN</code> → <code>null</code>, <code>Infinity</code> → <code>null</code><br>
+            • Podwójne przecinki<br>
+            • BOM (Byte Order Mark)<br><br>
+            
+            <strong>🔒 PRZETWARZANIE LOKALNE:</strong><br>
+            Wszystkie operacje wykonywane są w Twojej przeglądarce. Żadne dane nie są wysyłane na serwer.
+        </div>
+    </div>
+
+    <script>
+        const jsonInput = document.getElementById('jsonInput');
+        const filenameInput = document.getElementById('filenameInput');
+        const message = document.getElementById('message');
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const formatCheckbox = document.getElementById('formatCheckbox');
+        const autoSaveCheckbox = document.getElementById('autoSaveCheckbox');
+        const n8nExportModeCheckbox = document.getElementById('n8nExportMode');
+        const stats = document.getElementById('stats');
+
+        // NIE wczytuj zapisanego JSON przy starcie - zawsze zaczynaj z pustym polem
+        window.addEventListener('DOMContentLoaded', () => {
+            // Wyczyść pole przy starcie
+            jsonInput.value = '';
+            filenameInput.value = 'data';
+            updateContentTypeIndicator();
+            updateStats();
+            updateAutosaveStatus();
+        });
+
+        // Funkcja do aktualizacji statusu autosave
+        function updateAutosaveStatus() {
+            const autosaveStatus = document.getElementById('autosaveStatus');
+            if (autoSaveCheckbox.checked) {
+                autosaveStatus.style.display = 'inline';
+            } else {
+                autosaveStatus.style.display = 'none';
+            }
+        }
+
+        // Aktualizuj status autosave przy zmianie checkboxa
+        autoSaveCheckbox.addEventListener('change', () => {
+            updateAutosaveStatus();
+            if (!autoSaveCheckbox.checked) {
+                localStorage.removeItem('jsonEditor_data');
+            }
+        });
+
+        function showMessage(text, isError = false) {
+            message.textContent = text;
+            message.className = 'message ' + (isError ? 'error' : 'success');
+            setTimeout(() => {
+                message.className = 'message';
+            }, 5000);
+        }
+
+        function updateStats() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                stats.style.display = 'none';
+                updateN8NInfo(null);
+                return;
+            }
+
+            // Sprawdź typ zawartości - statystyki tylko dla JSON
+            const detection = detectContentType(content);
+            
+            if (detection.type !== 'json') {
+                // Dla JavaScript lub nieznanego typu - ukryj statystyki
+                stats.style.display = 'none';
+                updateN8NInfo(null);
+                return;
+            }
+
+            // Tylko dla JSON - wyświetl statystyki
+            try {
+                const parsed = JSON.parse(content);
+                const size = new Blob([content]).size;
+                const keys = countKeys(parsed);
+                const depth = getDepth(parsed);
+
+                document.getElementById('statSize').textContent = formatBytes(size);
+                document.getElementById('statKeys').textContent = keys;
+                document.getElementById('statDepth').textContent = depth;
+                stats.style.display = 'flex';
+                
+                // Aktualizuj informacje n8n jeśli to workflow
+                updateN8NInfo(parsed);
+            } catch (e) {
+                // Jeśli nie można sparsować jako JSON, ukryj statystyki
+                stats.style.display = 'none';
+                updateN8NInfo(null);
+            }
+        }
+
+        function updateN8NInfo(workflow) {
+            const n8nInfo = document.getElementById('n8nInfo');
+            if (!workflow || !isN8NWorkflow(workflow)) {
+                n8nInfo.classList.remove('show');
+                return;
+            }
+
+            const name = workflow.name || 'Brak nazwy';
+            const nodes = workflow.nodes ? workflow.nodes.length : 0;
+            const connections = workflow.connections ? Object.keys(workflow.connections).length : 0;
+            const version = workflow.version || 'Brak';
+            const active = workflow.active !== undefined ? (workflow.active ? 'Tak' : 'Nie') : 'Nieznane';
+
+            document.getElementById('n8nName').textContent = name;
+            document.getElementById('n8nNodes').textContent = nodes;
+            document.getElementById('n8nConnections').textContent = connections;
+            document.getElementById('n8nVersion').textContent = version;
+            document.getElementById('n8nActive').textContent = active;
+            n8nInfo.classList.add('show');
+        }
+
+        function isN8NWorkflow(obj) {
+            // Podstawowa walidacja struktury n8n workflow
+            return obj && (
+                (obj.nodes && Array.isArray(obj.nodes)) ||
+                (obj.connections && typeof obj.connections === 'object') ||
+                obj.name !== undefined
+            );
+        }
+
+        function validateN8N() {
+            const jsonText = jsonInput.value.trim();
+            
+            if (!jsonText) {
+                showMessage('Pole JSON jest puste', true);
+                jsonInput.classList.add('error');
+                return false;
+            }
+
+            let parsed;
+            try {
+                parsed = JSON.parse(jsonText);
+            } catch (e) {
+                showMessage('Błąd JSON: ' + e.message, true);
+                jsonInput.classList.add('error');
+                return false;
+            }
+
+            // Walidacja struktury n8n
+            const errors = [];
+            const warnings = [];
+
+            if (!isN8NWorkflow(parsed)) {
+                errors.push('To nie wygląda na workflow n8n');
+            }
+
+            if (!parsed.nodes || !Array.isArray(parsed.nodes)) {
+                errors.push('Brak lub nieprawidłowa tablica "nodes"');
+            } else {
+                if (parsed.nodes.length === 0) {
+                    warnings.push('Workflow nie ma żadnych węzłów');
+                }
+                
+                // Sprawdź podstawowe właściwości węzłów
+                parsed.nodes.forEach((node, index) => {
+                    if (!node.name) {
+                        warnings.push(`Węzeł ${index + 1} nie ma nazwy`);
+                    }
+                    if (!node.type) {
+                        errors.push(`Węzeł ${index + 1} nie ma typu`);
+                    }
+                });
+            }
+
+            if (!parsed.name) {
+                warnings.push('Workflow nie ma nazwy');
+            }
+
+            if (errors.length > 0) {
+                showMessage('❌ Błędy n8n: ' + errors.join(', '), true);
+                jsonInput.classList.add('error');
+                return false;
+            }
+
+            if (warnings.length > 0) {
+                showMessage('⚠️ Ostrzeżenia: ' + warnings.join(', ') + ' | ✓ Struktura workflow jest poprawna');
+            } else {
+                showMessage('✓ Workflow n8n jest poprawny!');
+            }
+            
+            jsonInput.classList.remove('error');
+            updateN8NInfo(parsed);
+            return true;
+        }
+
+        function loadTemplate() {
+            const templateSelect = document.getElementById('templateSelect');
+            const template = templateSelect.value;
+            
+            if (!template) return;
+
+            let workflow = {};
+
+            switch(template) {
+                case 'empty':
+                    workflow = {
+                        name: 'Nowy Workflow',
+                        nodes: [],
+                        connections: {},
+                        active: false,
+                        settings: {},
+                        staticData: null,
+                        tags: []
+                    };
+                    break;
+
+                case 'webhook':
+                    workflow = {
+                        name: 'Webhook → HTTP Request',
+                        nodes: [
+                            {
+                                parameters: {},
+                                id: 'webhook-node',
+                                name: 'Webhook',
+                                type: 'n8n-nodes-base.webhook',
+                                typeVersion: 1,
+                                position: [250, 300]
+                            },
+                            {
+                                parameters: {
+                                    url: 'https://example.com/api',
+                                    method: 'GET'
+                                },
+                                id: 'http-node',
+                                name: 'HTTP Request',
+                                type: 'n8n-nodes-base.httpRequest',
+                                typeVersion: 1,
+                                position: [450, 300]
+                            }
+                        ],
+                        connections: {
+                            'Webhook': {
+                                main: [[{ node: 'HTTP Request', type: 'main', index: 0 }]]
+                            }
+                        },
+                        active: false,
+                        settings: {},
+                        staticData: null,
+                        tags: []
+                    };
+                    break;
+
+                case 'schedule':
+                    workflow = {
+                        name: 'Schedule → Task',
+                        nodes: [
+                            {
+                                parameters: {
+                                    rule: {
+                                        interval: [{ field: 'hours', hoursInterval: 1 }]
+                                    }
+                                },
+                                id: 'schedule-node',
+                                name: 'Schedule',
+                                type: 'n8n-nodes-base.scheduleTrigger',
+                                typeVersion: 1,
+                                position: [250, 300]
+                            },
+                            {
+                                parameters: {},
+                                id: 'task-node',
+                                name: 'Task',
+                                type: 'n8n-nodes-base.noOp',
+                                typeVersion: 1,
+                                position: [450, 300]
+                            }
+                        ],
+                        connections: {
+                            'Schedule': {
+                                main: [[{ node: 'Task', type: 'main', index: 0 }]]
+                            }
+                        },
+                        active: false,
+                        settings: {},
+                        staticData: null,
+                        tags: []
+                    };
+                    break;
+
+                case 'manual':
+                    workflow = {
+                        name: 'Manual Trigger',
+                        nodes: [
+                            {
+                                parameters: {},
+                                id: 'manual-node',
+                                name: 'Manual Trigger',
+                                type: 'n8n-nodes-base.manualTrigger',
+                                typeVersion: 1,
+                                position: [250, 300]
+                            }
+                        ],
+                        connections: {},
+                        active: false,
+                        settings: {},
+                        staticData: null,
+                        tags: []
+                    };
+                    break;
+            }
+
+            jsonInput.value = JSON.stringify(workflow, null, 2);
+            updateStats();
+            saveToLocalStorage();
+            templateSelect.value = '';
+            showMessage('✓ Szablon załadowany!');
+        }
+
+        function countKeys(obj, count = 0) {
+            if (typeof obj !== 'object' || obj === null) return count;
+            if (Array.isArray(obj)) {
+                return obj.reduce((acc, item) => acc + countKeys(item, 0), count);
+            }
+            count += Object.keys(obj).length;
+            for (let key in obj) {
+                count = countKeys(obj[key], count);
+            }
+            return count;
+        }
+
+        function getDepth(obj, current = 0) {
+            if (typeof obj !== 'object' || obj === null) return current;
+            if (Array.isArray(obj)) {
+                if (obj.length === 0) return current;
+                return Math.max(...obj.map(item => getDepth(item, current + 1)));
+            }
+            const keys = Object.keys(obj);
+            if (keys.length === 0) return current;
+            return Math.max(...keys.map(key => getDepth(obj[key], current + 1)));
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function saveToLocalStorage() {
+            if (autoSaveCheckbox.checked) {
+                localStorage.setItem('jsonEditor_data', jsonInput.value);
+            }
+        }
+
+        // Centralny system wykrywania typu zawartości
+        function detectContentType(text) {
+            if (!text || !text.trim()) {
+                return { type: 'unknown', confidence: 0 };
+            }
+
+            const trimmed = text.trim();
+            
+            // PRIORYTET 1: Najpierw spróbuj sparsować jako JSON
+            // Jeśli JSON.parse() się powiedzie, to ZAWSZE jest JSON (nawet jeśli zawiera wzorce JS w stringach)
+            try {
+                JSON.parse(trimmed);
+                // Jeśli parsowanie się powiodło, to jest JSON - nie sprawdzaj wzorców JS
+                // bo mogą być w stringach (np. "items.length" w n8n workflow)
+                return { type: 'json', confidence: 1.0 };
+            } catch (e) {
+                // Nie jest poprawnym JSON - sprawdź czy to JavaScript
+            }
+
+            // PRIORYTET 2: Wykryj kod JavaScript (tylko jeśli nie jest poprawnym JSON)
+            const jsPatterns = [
+                /^\s*(var|let|const|function|if|for|while|return|class|export|import)\s+/m,
+                /;\s*$/m,
+                /=>\s*{?/m,
+                /\$node\[/m,
+                /items\.length/m,
+                /continue\s*;/m,
+                /break\s*;/m,
+                /\.indexOf\(/m,
+                /\.push\(/m,
+                /\.map\(/m,
+                /\.filter\(/m
+            ];
+            
+            // Jeśli nie zaczyna się od { lub [, prawdopodobnie JS
+            if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+                const jsMatches = jsPatterns.filter(pattern => pattern.test(trimmed)).length;
+                // Jeśli znajdzie wzorce JS, to JS
+                if (jsMatches >= 1) {
+                    return { type: 'js', confidence: 0.9 };
+                }
+                // Jeśli nie ma wzorców i nie zaczyna się od { lub [, to może być JS lub tekst
+                return { type: 'unknown', confidence: 0.4 };
+            }
+            
+            // Jeśli zaczyna się od { lub [ ale nie parsuje się jako JSON, sprawdź wzorce JS
+            const jsMatches = jsPatterns.filter(pattern => pattern.test(trimmed)).length;
+            if (jsMatches >= 3) {
+                return { type: 'js', confidence: 0.8 };
+            }
+
+            // Nieznany typ
+            return { type: 'unknown', confidence: 0.5 };
+        }
+
+        function updateContentTypeIndicator() {
+            const text = jsonInput.value.trim();
+            const indicator = document.getElementById('contentTypeIndicator');
+            
+            if (!text) {
+                indicator.style.display = 'none';
+                return;
+            }
+
+            const detection = detectContentType(text);
+            indicator.style.display = 'inline-block';
+            indicator.className = 'content-type-indicator ' + detection.type;
+            
+            const labels = {
+                'json': 'JSON',
+                'js': 'JavaScript',
+                'unknown': 'Nieznany'
+            };
+            
+            indicator.textContent = labels[detection.type] || 'Nieznany';
+        }
+
+        function formatJavaScript(code) {
+            // Zachowaj oryginalne wcięcia - tylko normalizuj białe znaki i usuń zbędne puste linie
+            const lines = code.split('\n');
+            const formatted = [];
+            let lastNonEmpty = -1;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const trimmed = line.trim();
+                
+                // Pomiń nadmiarowe puste linie (max 2 z rzędu)
+                if (!trimmed) {
+                    if (lastNonEmpty >= 0 && i - lastNonEmpty <= 2) {
+                        formatted.push('');
+                    }
+                    continue;
+                }
+                
+                formatted.push(line); // Zachowaj oryginalne wcięcia
+                lastNonEmpty = i;
+            }
+            
+            // Usuń puste linie na końcu
+            while (formatted.length > 0 && !formatted[formatted.length - 1].trim()) {
+                formatted.pop();
+            }
+            
+            return formatted.join('\n');
+        }
+
+        function formatOrFix() {
+            const content = jsonInput.value.trim();
+            
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
+            try {
+                JSON.parse(content);
+                // Jeśli parsuje się jako JSON, użyj fixJSON
+                fixJSON(content);
+                return;
+            } catch (jsonError) {
+                // Nie jest poprawnym JSON - sprawdź typ
+                const detection = detectContentType(content);
+                
+                // Obsługa JavaScript
+                if (detection.type === 'js') {
+                    try {
+                        const formatted = formatJavaScript(content);
+                        jsonInput.value = formatted;
+                        updateContentTypeIndicator();
+                        saveToLocalStorage();
+                        showMessage('✓ Kod JavaScript został sformatowany!');
+                        jsonInput.classList.remove('error');
+                    } catch (e) {
+                        showMessage('⚠️ Nie udało się sformatować kodu JavaScript: ' + e.message, true);
+                    }
+                    return;
+                }
+
+                // Nieznany typ - spróbuj naprawić jako JSON
+                showMessage('⚠️ Nie rozpoznano typu zawartości. Próbuję naprawić jako JSON...', false);
+                fixJSON(content);
+            }
+        }
+
+        function fixJSON(jsonText) {
+            const fixes = [];
+            let fixed = jsonText;
+            const originalLength = fixed.length;
+
+            // NAJPIERW: Sprawdź czy JSON jest już poprawny - jeśli tak, tylko sformatuj
+            try {
+                const alreadyParsed = JSON.parse(fixed);
+                // JSON jest poprawny! Tylko sformatuj
+                fixed = formatCheckbox.checked 
+                    ? JSON.stringify(alreadyParsed, null, 2)
+                    : JSON.stringify(alreadyParsed);
+                
+                jsonInput.value = fixed;
+                jsonInput.classList.remove('error');
+                updateContentTypeIndicator();
+                updateStats();
+                saveToLocalStorage();
+                
+                showMessage('✓ JSON był już poprawny - sformatowano');
+                return; // Sukces - nie trzeba naprawiać
+            } catch (e) {
+                // JSON ma błędy - kontynuuj naprawę
+            }
+
+            // 1. Usuń BOM (Byte Order Mark)
+            if (fixed.length > 0 && fixed.charCodeAt(0) === 0xFEFF) {
+                fixed = fixed.slice(1);
+                fixes.push('Usunięto BOM');
+            }
+
+            // 2. Usuń komentarze jednoliniowe (//) - TYLKO poza stringami
+            const beforeComments = fixed;
+            let inString = false;
+            let escapeNext = false;
+            let stringChar = '';
+            let result = '';
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    // W stringu - kopiuj wszystko
+                    result += char;
+                    continue;
+                }
+                
+                // Poza stringiem - sprawdź komentarze
+                if (char === '/' && i + 1 < fixed.length) {
+                    if (fixed[i + 1] === '/') {
+                        // Komentarz jednoliniowy - usuń do końca linii
+                        while (i < fixed.length && fixed[i] !== '\n') {
+                            i++;
+                        }
+                        if (i < fixed.length) {
+                            result += '\n';
+                        }
+                        continue;
+                    }
+                    if (fixed[i + 1] === '*') {
+                        // Komentarz wieloliniowy - usuń do */
+                        i += 2;
+                        while (i + 1 < fixed.length) {
+                            if (fixed[i] === '*' && fixed[i + 1] === '/') {
+                                i += 2;
+                                break;
+                            }
+                            i++;
+                        }
+                        continue;
+                    }
+                }
+                
+                result += char;
+            }
+            
+            if (result !== beforeComments) {
+                fixes.push('Usunięto komentarze');
+            }
+            fixed = result;
+
+            // 3. Zamień pojedyncze cudzysłowy na podwójne TYLKO w kluczach (poza stringami)
+            // Używamy prostszego podejścia - tylko dla kluczy przed dwukropkiem
+            const beforeQuotes = fixed;
+            fixed = fixed.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+            if (fixed !== beforeQuotes) {
+                fixes.push('Zamieniono cudzysłowy w kluczach');
+            }
+
+            // 4. Napraw brakujące cudzysłowy w kluczach (tylko identyfikatory, poza stringami)
+            const beforeKeys = fixed;
+            // Bardzo ostrożny regex - tylko identyfikatory przed dwukropkiem, poza stringami
+            fixed = fixed.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+            if (fixed !== beforeKeys) {
+                fixes.push('Dodano cudzysłowy w kluczach');
+            }
+
+            // 5. Usuń przecinki na końcu (trailing commas) - TYLKO poza stringami
+            const beforeTrailing = fixed;
+            inString = false;
+            escapeNext = false;
+            stringChar = '';
+            result = '';
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    result += char;
+                    continue;
+                }
+                
+                // Poza stringiem - usuń trailing commas
+                if (char === ',' && i + 1 < fixed.length) {
+                    let j = i + 1;
+                    // Pomiń białe znaki
+                    while (j < fixed.length && /\s/.test(fixed[j])) {
+                        j++;
+                    }
+                    if (j < fixed.length && (fixed[j] === '}' || fixed[j] === ']')) {
+                        // Trailing comma - pomiń
+                        i = j - 1;
+                        continue;
+                    }
+                }
+                
+                result += char;
+            }
+            
+            if (result !== beforeTrailing) {
+                fixes.push('Usunięto przecinki na końcu');
+            }
+            fixed = result;
+
+            // 6. Zamień niepoprawne wartości JavaScript na JSON (TYLKO poza stringami)
+            const beforeUndefined = fixed;
+            inString = false;
+            escapeNext = false;
+            stringChar = '';
+            result = '';
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    result += char;
+                    continue;
+                }
+                
+                // Poza stringiem - zamień undefined/NaN/Infinity
+                if (char === 'u' && fixed.substring(i, i + 9) === 'undefined') {
+                    // Sprawdź kontekst - czy to wartość (po dwukropku)
+                    let checkBack = i - 1;
+                    while (checkBack >= 0 && /\s/.test(fixed[checkBack])) {
+                        checkBack--;
+                    }
+                    if (checkBack >= 0 && fixed[checkBack] === ':') {
+                        result += 'null';
+                        i += 8; // 'undefined'.length - 1
+                        continue;
+                    }
+                }
+                
+                if (char === 'N' && fixed.substring(i, i + 3) === 'NaN') {
+                    let checkBack = i - 1;
+                    while (checkBack >= 0 && /\s/.test(fixed[checkBack])) {
+                        checkBack--;
+                    }
+                    if (checkBack >= 0 && fixed[checkBack] === ':') {
+                        result += 'null';
+                        i += 2;
+                        continue;
+                    }
+                }
+                
+                if (char === 'I' && fixed.substring(i, i + 8) === 'Infinity') {
+                    let checkBack = i - 1;
+                    while (checkBack >= 0 && /\s/.test(fixed[checkBack])) {
+                        checkBack--;
+                    }
+                    if (checkBack >= 0 && fixed[checkBack] === ':') {
+                        result += 'null';
+                        i += 7;
+                        continue;
+                    }
+                }
+                
+                result += char;
+            }
+            
+            if (result !== beforeUndefined) {
+                fixes.push('Zamieniono niepoprawne wartości na null');
+            }
+            fixed = result;
+
+            // 7. Napraw podwójne przecinki (TYLKO poza stringami)
+            const beforeDoubleCommas = fixed;
+            inString = false;
+            escapeNext = false;
+            stringChar = '';
+            result = '';
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    result += char;
+                    continue;
+                }
+                
+                // Poza stringiem - usuń podwójne przecinki
+                if (char === ',' && i + 1 < fixed.length) {
+                    let j = i + 1;
+                    while (j < fixed.length && /\s/.test(fixed[j])) {
+                        j++;
+                    }
+                    if (j < fixed.length && fixed[j] === ',') {
+                        // Podwójny przecinek - pomiń pierwszy
+                        continue;
+                    }
+                }
+                
+                result += char;
+            }
+            
+            if (result !== beforeDoubleCommas) {
+                fixes.push('Usunięto podwójne przecinki');
+            }
+            fixed = result;
+
+            // 8. Usuń zbędne białe znaki na początku/końcu
+            fixed = fixed.trim();
+
+            // 9. Sprawdź czy nie zepsuło się zbyt dużo (zabezpieczenie)
+            if (Math.abs(fixed.length - originalLength) > originalLength * 0.5) {
+                throw new Error('Naprawa spowodowała zbyt duże zmiany - możliwe uszkodzenie danych');
+            }
+
+            // Spróbuj sparsować naprawiony JSON
+            let parsed;
+            try {
+                parsed = JSON.parse(fixed);
+                
+                // Formatuj jeśli checkbox jest zaznaczony
+                if (formatCheckbox.checked) {
+                    fixed = JSON.stringify(parsed, null, 2);
+                } else {
+                    fixed = JSON.stringify(parsed);
+                }
+
+                jsonInput.value = fixed;
+                jsonInput.classList.remove('error');
+                updateContentTypeIndicator();
+                updateStats();
+                saveToLocalStorage();
+
+                if (fixes.length > 0) {
+                    showMessage('✓ Naprawiono: ' + fixes.join(', '));
+                } else {
+                    showMessage('✓ JSON był już poprawny - sformatowano');
+                }
+                return; // Sukces!
+            } catch (e) {
+                // Jeśli nadal nie działa, spróbuj bardziej agresywnych napraw (ale bezpiecznie - tylko poza stringami)
+                try {
+                    let aggressiveFixed = fixed;
+                    
+                    // KROK 1: Usuń trailing commas i napraw undefined (już zrobione wcześniej, ale powtórzmy)
+                    let inString = false;
+                    let escapeNext = false;
+                    let stringChar = '';
+                    let result = '';
+                    
+                    for (let i = 0; i < aggressiveFixed.length; i++) {
+                        const char = aggressiveFixed[i];
+                        
+                        if (escapeNext) {
+                            result += char;
+                            escapeNext = false;
+                            continue;
+                        }
+                        
+                        if (char === '\\') {
+                            result += char;
+                            escapeNext = true;
+                            continue;
+                        }
+                        
+                        if ((char === '"' || char === "'") && !inString) {
+                            inString = true;
+                            stringChar = char;
+                            result += char;
+                            continue;
+                        }
+                        
+                        if (char === stringChar && inString) {
+                            inString = false;
+                            stringChar = '';
+                            result += char;
+                            continue;
+                        }
+                        
+                        if (inString) {
+                            result += char;
+                            continue;
+                        }
+                        
+                        // Poza stringiem - agresywne naprawy
+                        // Trailing commas
+                        if (char === ',' && i + 1 < aggressiveFixed.length) {
+                            let j = i + 1;
+                            while (j < aggressiveFixed.length && /\s/.test(aggressiveFixed[j])) {
+                                j++;
+                            }
+                            if (j < aggressiveFixed.length && (aggressiveFixed[j] === '}' || aggressiveFixed[j] === ']')) {
+                                continue; // Pomiń trailing comma
+                            }
+                        }
+                        
+                        // undefined/NaN/Infinity
+                        if (char === 'u' && aggressiveFixed.substring(i, i + 9) === 'undefined') {
+                            let checkBack = i - 1;
+                            while (checkBack >= 0 && /\s/.test(aggressiveFixed[checkBack])) {
+                                checkBack--;
+                            }
+                            if (checkBack >= 0 && aggressiveFixed[checkBack] === ':') {
+                                result += 'null';
+                                i += 8;
+                                continue;
+                            }
+                        }
+                        
+                        if (char === 'N' && aggressiveFixed.substring(i, i + 3) === 'NaN') {
+                            let checkBack = i - 1;
+                            while (checkBack >= 0 && /\s/.test(aggressiveFixed[checkBack])) {
+                                checkBack--;
+                            }
+                            if (checkBack >= 0 && aggressiveFixed[checkBack] === ':') {
+                                result += 'null';
+                                i += 2;
+                                continue;
+                            }
+                        }
+                        
+                        if (char === 'I' && aggressiveFixed.substring(i, i + 8) === 'Infinity') {
+                            let checkBack = i - 1;
+                            while (checkBack >= 0 && /\s/.test(aggressiveFixed[checkBack])) {
+                                checkBack--;
+                            }
+                            if (checkBack >= 0 && aggressiveFixed[checkBack] === ':') {
+                                result += 'null';
+                                i += 7;
+                                continue;
+                            }
+                        }
+                        
+                        result += char;
+                    }
+                    
+                    aggressiveFixed = result;
+                    
+                    // KROK 2: Napraw brakujące przecinki - parsuj znak po znaku (najbezpieczniejsze)
+                    const beforeCommas = aggressiveFixed;
+                    inString = false;
+                    escapeNext = false;
+                    stringChar = '';
+                    result = '';
+                    let lastValueEnd = -1; // Pozycja końca ostatniej wartości
+                    let expectingComma = false; // Czy oczekujemy przecinka
+                    
+                    for (let i = 0; i < aggressiveFixed.length; i++) {
+                        const char = aggressiveFixed[i];
+                        
+                        if (escapeNext) {
+                            result += char;
+                            escapeNext = false;
+                            continue;
+                        }
+                        
+                        if (char === '\\') {
+                            result += char;
+                            escapeNext = true;
+                            continue;
+                        }
+                        
+                        if ((char === '"' || char === "'") && !inString) {
+                            // Sprawdź czy przed tym cudzysłowem była wartość bez przecinka
+                            // ALE TYLKO jeśli jesteśmy na poziomie właściwości obiektu (nie w zagnieżdżeniu)
+                            if (expectingComma && lastValueEnd >= 0) {
+                                // Sprawdź czy między ostatnią wartością a tym cudzysłowem są tylko białe znaki
+                                let between = aggressiveFixed.substring(lastValueEnd + 1, i);
+                                if (/^\s*$/.test(between)) {
+                                    // Sprawdź czy to nowa właściwość (cudzysłów, potem dwukropek)
+                                    // WAŻNE: Sprawdź czy nie jesteśmy w zagnieżdżonym obiekcie/tablicy
+                                    let depth = 0;
+                                    for (let k = 0; k < i; k++) {
+                                        if (aggressiveFixed[k] === '{' || aggressiveFixed[k] === '[') depth++;
+                                        if (aggressiveFixed[k] === '}' || aggressiveFixed[k] === ']') depth--;
+                                    }
+                                    
+                                    // Tylko jeśli jesteśmy na poziomie głównym lub w obiekcie (depth >= 0)
+                                    if (depth >= 0) {
+                                        let checkForward = i + 1;
+                                        while (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] !== '"' && aggressiveFixed[checkForward] !== ':') {
+                                            checkForward++;
+                                        }
+                                        if (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] === ':') {
+                                            // To nowa właściwość! Dodaj przecinek przed białymi znakami
+                                            result += ',';
+                                            if (!fixes.includes('Dodano brakujący przecinek')) {
+                                                fixes.push('Dodano brakujący przecinek');
+                                            }
+                                            expectingComma = false;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            inString = true;
+                            stringChar = char;
+                            result += char;
+                            continue;
+                        }
+                        
+                        if (char === stringChar && inString) {
+                            inString = false;
+                            stringChar = '';
+                            result += char;
+                            lastValueEnd = i;
+                            expectingComma = true; // Po stringu oczekujemy przecinka lub zamknięcia
+                            continue;
+                        }
+                        
+                        if (inString) {
+                            result += char;
+                            continue;
+                        }
+                        
+                        // Poza stringiem
+                        if (char === '{' || char === '[') {
+                            result += char;
+                            expectingComma = false;
+                            lastValueEnd = -1;
+                            continue;
+                        }
+                        
+                        if (char === '}' || char === ']') {
+                            result += char;
+                            // Po zamknięciu obiektu/tablicy nie oczekujemy przecinka (może być ostatnia właściwość)
+                            expectingComma = false;
+                            lastValueEnd = -1;
+                            continue;
+                        }
+                        
+                        if (char === ':') {
+                            result += char;
+                            expectingComma = false;
+                            lastValueEnd = -1;
+                            continue;
+                        }
+                        
+                        if (char === ',') {
+                            result += char;
+                            expectingComma = false;
+                            lastValueEnd = -1;
+                            continue;
+                        }
+                        
+                        // Jeśli oczekujemy przecinka i napotkaliśmy coś innego niż białe znaki
+                        if (expectingComma && !/\s/.test(char) && char !== '}' && char !== ']') {
+                            // Sprawdź czy to nowa właściwość (cudzysłów, potem dwukropek)
+                            if (char === '"') {
+                                let checkForward = i + 1;
+                                while (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] !== '"' && aggressiveFixed[checkForward] !== ':') {
+                                    checkForward++;
+                                }
+                                if (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] === ':') {
+                                    // To nowa właściwość! Dodaj przecinek przed białymi znakami
+                                    // Znajdź początek białych znaków przed tym cudzysłowem
+                                    let whitespaceStart = i - 1;
+                                    while (whitespaceStart >= 0 && /\s/.test(aggressiveFixed[whitespaceStart])) {
+                                        whitespaceStart--;
+                                    }
+                                    // Dodaj przecinek
+                                    result += ',';
+                                    if (!fixes.includes('Dodano brakujący przecinek')) {
+                                        fixes.push('Dodano brakujący przecinek');
+                                    }
+                                    expectingComma = false;
+                                }
+                            }
+                        }
+                        
+                        // Sprawdź czy to true/false/null
+                        if (char === 't' && aggressiveFixed.substring(i, i + 4) === 'true') {
+                            result += 'true';
+                            i += 3;
+                            lastValueEnd = i;
+                            expectingComma = true;
+                            continue;
+                        }
+                        
+                        if (char === 'f' && aggressiveFixed.substring(i, i + 5) === 'false') {
+                            result += 'false';
+                            i += 4;
+                            lastValueEnd = i;
+                            expectingComma = true;
+                            continue;
+                        }
+                        
+                        if (char === 'n' && aggressiveFixed.substring(i, i + 4) === 'null') {
+                            result += 'null';
+                            i += 3;
+                            lastValueEnd = i;
+                            expectingComma = true;
+                            continue;
+                        }
+                        
+                        // Sprawdź czy to liczba
+                        if (/\d/.test(char) || char === '-' || char === '.') {
+                            let numEnd = i;
+                            let numStr = '';
+                            while (numEnd < aggressiveFixed.length) {
+                                const testChar = aggressiveFixed[numEnd];
+                                if (testChar === ',' || testChar === '}' || testChar === ']' || 
+                                    (/\s/.test(testChar) && numStr.length > 0) ||
+                                    testChar === ':' || testChar === '"') {
+                                    break;
+                                }
+                                numStr += testChar;
+                                numEnd++;
+                            }
+                            
+                            // Sprawdź czy to poprawna liczba
+                            if (/^-?\d+\.?\d*$/.test(numStr.trim())) {
+                                result += numStr;
+                                i = numEnd - 1;
+                                lastValueEnd = i;
+                                expectingComma = true;
+                                continue;
+                            }
+                        }
+                        
+                        result += char;
+                    }
+                    
+                    aggressiveFixed = result;
+                    
+                    // Spróbuj sparsować ponownie
+                    if (aggressiveFixed.trim().startsWith('{') || aggressiveFixed.trim().startsWith('[')) {
+                        parsed = JSON.parse(aggressiveFixed);
+                        fixed = formatCheckbox.checked 
+                            ? JSON.stringify(parsed, null, 2)
+                            : JSON.stringify(parsed);
+                        
+                        jsonInput.value = fixed;
+                        jsonInput.classList.remove('error');
+                        updateContentTypeIndicator();
+                        updateStats();
+                        saveToLocalStorage();
+                        showMessage('✓ Naprawiono z użyciem zaawansowanych metod');
+                        return; // Sukces po agresywnych naprawach
+                    } else {
+                        throw new Error('Struktura nie wygląda na JSON');
+                    }
+                } catch (e2) {
+                    // Ostatnia próba - pokaż szczegółowy błąd z lokalizacją
+                    const errorMsg = e2.message;
+                    let detailedMsg = '❌ Nie udało się automatycznie naprawić JSON.\n\n';
+                    detailedMsg += 'Błąd: ' + errorMsg + '\n\n';
+                    
+                    // Spróbuj wyciągnąć numer linii z błędu
+                    const lineMatch = errorMsg.match(/line (\d+)/i);
+                    const posMatch = errorMsg.match(/position (\d+)/i);
+                    
+                    if (lineMatch) {
+                        const lineNum = parseInt(lineMatch[1]);
+                        const lines = fixed.split('\n');
+                        if (lines[lineNum - 1]) {
+                            detailedMsg += `Linia ${lineNum}: ${lines[lineNum - 1].trim()}\n\n`;
+                        }
+                    } else if (posMatch) {
+                        const pos = parseInt(posMatch[1]);
+                        const before = fixed.substring(0, Math.min(pos, fixed.length));
+                        const after = fixed.substring(pos, Math.min(pos + 50, fixed.length));
+                        const lineNum = before.split('\n').length;
+                        detailedMsg += `Pozycja ${pos} (linia ~${lineNum}):\n`;
+                        detailedMsg += `...${before.slice(-30)}[BŁĄD]${after.slice(0, 30)}...\n\n`;
+                    }
+                    
+                    detailedMsg += '💡 Wskazówki do ręcznej naprawy:\n';
+                    detailedMsg += '• Sprawdź czy wszystkie przecinki są na miejscu (szczególnie między właściwościami)\n';
+                    detailedMsg += '• Sprawdź czy wszystkie cudzysłowy są zamknięte\n';
+                    detailedMsg += '• Sprawdź czy nie ma komentarzy w JSON (// lub /* */)\n';
+                    detailedMsg += '• Sprawdź czy nie ma undefined, NaN, Infinity\n';
+                    detailedMsg += '• Sprawdź czy w stringach nie ma niepoprawnych escape\'ów\n';
+                    detailedMsg += '• Użyj "Waliduj JSON" aby zobaczyć dokładny błąd\n';
+                    detailedMsg += '\n💡 Częsty błąd: Brak przecinka między właściwościami\n';
+                    detailedMsg += '   Przykład błędny: "key1": "value1" "key2": "value2"\n';
+                    detailedMsg += '   Przykład poprawny: "key1": "value1", "key2": "value2"';
+                    
+                    alert(detailedMsg);
+                    showMessage('❌ Nie udało się automatycznie naprawić JSON. Sprawdź szczegóły w oknie dialogowym.', true);
+                    jsonInput.classList.add('error');
+                }
+            }
+        }
+
+        function validateContent() {
+            const content = jsonInput.value.trim();
+            
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                jsonInput.classList.add('error');
+                updateContentTypeIndicator();
+                return false;
+            }
+
+            // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
+            try {
+                const parsed = JSON.parse(content);
+                updateContentTypeIndicator();
+                showMessage('✓ JSON jest poprawny!');
+                jsonInput.classList.remove('error');
+                updateStats();
+                return true;
+            } catch (jsonError) {
+                // Nie jest poprawnym JSON - sprawdź typ
+                const detection = detectContentType(content);
+                updateContentTypeIndicator();
+
+                if (detection.type === 'js') {
+                    // Podstawowa walidacja składni JS
+                    try {
+                        new Function(content);
+                        showMessage('✓ Kod JavaScript wygląda poprawnie!');
+                        jsonInput.classList.remove('error');
+                        return true;
+                    } catch (e) {
+                        showMessage('⚠️ Możliwe błędy w kodzie JavaScript: ' + e.message, true);
+                        jsonInput.classList.add('error');
+                        return false;
+                    }
+                }
+
+                // Jeśli nie JSON i nie JS, pokaż błąd JSON
+                showMessage('Błąd JSON: ' + jsonError.message, true);
+                jsonInput.classList.add('error');
+                updateStats();
+                return false;
+            }
+        }
+
+        function exportToN8N() {
+            const content = jsonInput.value.trim();
+            
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                jsonInput.classList.add('error');
+                return;
+            }
+
+            let parsedJSON;
+            try {
+                parsedJSON = JSON.parse(content);
+            } catch (e) {
+                showMessage('❌ To nie jest poprawny JSON. Użyj "🔧 Formatuj/Napraw" aby naprawić błędy.', true);
+                jsonInput.classList.add('error');
+                return;
+            }
+
+            // Walidacja czy to workflow n8n
+            const isN8N = isN8NWorkflow(parsedJSON);
+            if (!isN8N) {
+                const confirmExport = confirm('⚠️ To nie wygląda na workflow n8n. Czy na pewno chcesz eksportować jako JSON?');
+                if (!confirmExport) {
+                    return;
+                }
+            } else {
+                // Jeśli to workflow n8n, sprawdź podstawowe wymagania
+                const errors = [];
+                if (!parsedJSON.nodes || !Array.isArray(parsedJSON.nodes)) {
+                    errors.push('Brak tablicy "nodes"');
+                }
+                if (errors.length > 0) {
+                    const confirmExport = confirm('⚠️ Workflow n8n ma błędy: ' + errors.join(', ') + '. Czy na pewno chcesz eksportować?');
+                    if (!confirmExport) {
+                        return;
+                    }
+                }
+            }
+
+            // Przygotuj workflow do eksportu - zawsze formatuj (pretty print)
+            const formattedJSON = JSON.stringify(parsedJSON, null, 2);
+            
+            // Ustaw nazwę pliku na podstawie workflow
+            let filename = 'workflow';
+            if (parsedJSON.name) {
+                filename = parsedJSON.name.replace(/[^a-z0-9_-]/gi, '_');
+            } else if (filenameInput.value.trim()) {
+                filename = filenameInput.value.trim().replace(/[^a-z0-9_-]/gi, '_');
+            }
+
+            // Pobierz jako JSON
+            const blob = new Blob([formattedJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showMessage('✓ Workflow n8n gotowy do importu! Zaimportuj w n8n: Menu → Import from File → wybierz pobrany plik.');
+            jsonInput.classList.remove('error');
+        }
+
+        function minifyJSON() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(content);
+                const minified = JSON.stringify(parsed);
+                jsonInput.value = minified;
+                updateContentTypeIndicator();
+                updateStats();
+                saveToLocalStorage();
+                // Formatowanie nie zmienia struktury, więc nie resetujemy oryginału
+                showMessage('✓ JSON został zminifikowany (usunięto wszystkie białe znaki)!');
+                jsonInput.classList.remove('error');
+            } catch (e) {
+                showMessage('Błąd JSON: ' + e.message + '. Użyj "🔧 Formatuj/Napraw" aby naprawić.', true);
+                jsonInput.classList.add('error');
+            }
+        }
+
+        function beautifyJSON() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(content);
+                const beautified = JSON.stringify(parsed, null, 2);
+                jsonInput.value = beautified;
+                updateContentTypeIndicator();
+                updateStats();
+                saveToLocalStorage();
+                // Formatowanie nie zmienia struktury, więc nie resetujemy oryginału
+                showMessage('✓ JSON został sformatowany (pretty print)!');
+                jsonInput.classList.remove('error');
+            } catch (e) {
+                showMessage('Błąd JSON: ' + e.message + '. Użyj "🔧 Formatuj/Napraw" aby naprawić.', true);
+                jsonInput.classList.add('error');
+            }
+        }
+
+        // Zmienna do przechowywania oryginalnego JSON przed pokazaniem struktury
+        let originalJSONBeforeStructure = null;
+
+        function showStructure() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(content);
+                
+                // Zapisz oryginalny JSON jeśli jeszcze nie zapisany
+                if (originalJSONBeforeStructure === null) {
+                    originalJSONBeforeStructure = content;
+                }
+                
+                // Funkcja do tworzenia struktury (typy wartości, bez danych)
+                function getStructure(obj, depth = 0) {
+                    if (depth > 10) return '...'; // Zabezpieczenie przed zbyt głębokim zagnieżdżeniem
+                    
+                    if (obj === null) return 'null';
+                    if (Array.isArray(obj)) {
+                        if (obj.length === 0) return '[]';
+                        return '[' + getStructure(obj[0], depth + 1) + ', ...] (' + obj.length + ' items)';
+                    }
+                    if (typeof obj === 'object') {
+                        const keys = Object.keys(obj);
+                        if (keys.length === 0) return '{}';
+                        const structure = {};
+                        keys.forEach(key => {
+                            const value = obj[key];
+                            if (typeof value === 'object' && value !== null) {
+                                structure[key] = getStructure(value, depth + 1);
+                            } else {
+                                structure[key] = typeof value;
+                            }
+                        });
+                        return JSON.stringify(structure, null, 2);
+                    }
+                    return typeof obj;
+                }
+
+                const structure = getStructure(parsed);
+                jsonInput.value = structure;
+                updateContentTypeIndicator();
+                
+                // Pokaż przycisk "Przywróć oryginał"
+                document.getElementById('restoreBtn').style.display = 'inline-block';
+                
+                showMessage('✓ Wyświetlono strukturę JSON. Użyj "Przywróć oryginał" aby wrócić do pełnego JSON.');
+                jsonInput.classList.remove('error');
+            } catch (e) {
+                showMessage('Błąd JSON: ' + e.message, true);
+                jsonInput.classList.add('error');
+            }
+        }
+
+        function restoreOriginal() {
+            if (originalJSONBeforeStructure !== null) {
+                jsonInput.value = originalJSONBeforeStructure;
+                originalJSONBeforeStructure = null;
+                updateContentTypeIndicator();
+                updateStats();
+                saveToLocalStorage();
+                
+                // Ukryj przycisk "Przywróć oryginał"
+                document.getElementById('restoreBtn').style.display = 'none';
+                
+                showMessage('✓ Przywrócono oryginalny JSON!');
+                jsonInput.classList.remove('error');
+            } else {
+                showMessage('Brak zapisanego oryginału do przywrócenia', false);
+            }
+        }
+
+        function downloadJSON() {
+            const content = jsonInput.value.trim();
+            
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                jsonInput.classList.add('error');
+                return;
+            }
+
+            // Sprawdź czy tryb n8n jest włączony
+            const n8nExportMode = n8nExportModeCheckbox.checked;
+
+            // NAJWAŻNIEJSZE: Jeśli tryb n8n jest włączony, zawsze próbuj jako JSON
+            if (n8nExportMode) {
+                let parsedJSON = null;
+                try {
+                    parsedJSON = JSON.parse(content);
+                    
+                    // Jeśli parsuje się jako JSON, zawsze pobierz jako .json
+                    const formattedJSON = formatCheckbox.checked 
+                        ? JSON.stringify(parsedJSON, null, 2)
+                        : JSON.stringify(parsedJSON);
+                    
+                    let filename = filenameInput.value.trim();
+                    if (isN8NWorkflow(parsedJSON) && parsedJSON.name) {
+                        filename = parsedJSON.name.replace(/[^a-z0-9_-]/gi, '_');
+                    }
+                    if (!filename) filename = 'workflow';
+                    
+                    const blob = new Blob([formattedJSON], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename + '.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showMessage('✓ Plik JSON został pobrany! Gotowy do importu w n8n.');
+                    jsonInput.classList.remove('error');
+                    return;
+                } catch (e) {
+                    // Jeśli nie parsuje się jako JSON w trybie n8n, pokaż błąd
+                    showMessage('❌ To nie jest poprawny JSON. Użyj "Formatuj/Napraw" aby naprawić błędy lub wyłącz "Tryb eksportu n8n".', true);
+                    jsonInput.classList.add('error');
+                    return;
+                }
+            }
+
+            // Jeśli tryb n8n jest wyłączony, użyj standardowej logiki
+            let parsedJSON = null;
+            let isValidJSON = false;
+            try {
+                parsedJSON = JSON.parse(content);
+                isValidJSON = true;
+            } catch (e) {
+                // Nie jest poprawnym JSON
+            }
+
+            // Jeśli parsuje się jako JSON, zawsze pobierz jako .json
+            if (isValidJSON && parsedJSON !== null) {
+                const formattedJSON = formatCheckbox.checked 
+                    ? JSON.stringify(parsedJSON, null, 2)
+                    : JSON.stringify(parsedJSON);
+                
+                let filename = filenameInput.value.trim();
+                if (isN8NWorkflow(parsedJSON) && parsedJSON.name) {
+                    filename = parsedJSON.name.replace(/[^a-z0-9_-]/gi, '_');
+                }
+                if (!filename) filename = 'data';
+                
+                const blob = new Blob([formattedJSON], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename + '.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showMessage('✓ Plik JSON został pobrany!');
+                jsonInput.classList.remove('error');
+                return;
+            }
+
+            // Jeśli nie jest poprawnym JSON, sprawdź typ
+            const detection = detectContentType(content);
+            
+            // Obsługa JavaScript (tylko gdy tryb n8n wyłączony)
+            if (detection.type === 'js') {
+                let filename = filenameInput.value.trim() || 'code';
+                filename = filename.replace(/[^a-z0-9_-]/gi, '_');
+                if (!filename) filename = 'code';
+                
+                const blob = new Blob([content], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename + '.js';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showMessage('✓ Kod JavaScript został pobrany jako plik .js!');
+                jsonInput.classList.remove('error');
+                return;
+            }
+
+            // Nieznany typ - spróbuj jako tekst
+            let filename = filenameInput.value.trim() || 'content';
+            filename = filename.replace(/[^a-z0-9_-]/gi, '_');
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('✓ Zawartość została pobrana jako plik tekstowy!');
+        }
+
+        function copyToClipboard() {
+            const content = jsonInput.value.trim();
+            
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            let textToCopy = content;
+            let typeLabel = 'Zawartość';
+
+            // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
+            try {
+                const parsed = JSON.parse(content);
+                // Jeśli parsuje się jako JSON, formatuj jeśli checkbox jest zaznaczony
+                if (formatCheckbox.checked) {
+                    textToCopy = JSON.stringify(parsed, null, 2);
+                }
+                typeLabel = 'JSON';
+            } catch (jsonError) {
+                // Nie jest poprawnym JSON - sprawdź typ
+                const detection = detectContentType(content);
+                typeLabel = detection.type === 'js' ? 'Kod JavaScript' : 'Zawartość';
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showMessage(`✓ ${typeLabel} skopiowany do schowka!`);
+            }).catch(() => {
+                // Fallback dla starszych przeglądarek
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showMessage(`✓ ${typeLabel} skopiowany do schowka!`);
+            });
+        }
+
+        function loadFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    const isJSFile = file.name.toLowerCase().endsWith('.js');
+                    
+                    // Resetuj oryginał przed wczytaniem nowego pliku
+                    originalJSONBeforeStructure = null;
+                    document.getElementById('restoreBtn').style.display = 'none';
+                    
+                    // Jeśli to plik JS, po prostu wczytaj
+                    if (isJSFile) {
+                        jsonInput.value = content;
+                        filenameInput.value = file.name.replace(/\.js$/i, '') || 'code';
+                        updateContentTypeIndicator();
+                        saveToLocalStorage();
+                        showMessage('✓ Plik JavaScript wczytany pomyślnie!');
+                        jsonInput.classList.remove('error');
+                        return;
+                    }
+                    
+                    // Spróbuj jako JSON
+                    try {
+                        const parsed = JSON.parse(content);
+                        jsonInput.value = formatCheckbox.checked 
+                            ? JSON.stringify(parsed, null, 2)
+                            : content;
+                        
+                        // Ustaw nazwę pliku na podstawie workflow n8n
+                        if (isN8NWorkflow(parsed) && parsed.name) {
+                            filenameInput.value = parsed.name.replace(/[^a-z0-9_-]/gi, '_');
+                        } else {
+                            filenameInput.value = file.name.replace(/\.(json|txt)$/i, '') || 'data';
+                        }
+                        
+                        updateStats();
+                        updateContentTypeIndicator();
+                        saveToLocalStorage();
+                        showMessage('✓ Plik JSON wczytany pomyślnie!');
+                        jsonInput.classList.remove('error');
+                    } catch (jsonErr) {
+                        // Jeśli nie jest JSON, wczytaj jako tekst (może być JS)
+                        jsonInput.value = content;
+                        filenameInput.value = file.name.replace(/\.[^.]+$/i, '') || 'data';
+                        updateContentTypeIndicator();
+                        saveToLocalStorage();
+                        showMessage('✓ Plik wczytany jako tekst!');
+                        jsonInput.classList.remove('error');
+                    }
+                } catch (err) {
+                    showMessage('Błąd: ' + err.message, true);
+                    jsonInput.classList.add('error');
+                }
+            };
+            reader.onerror = () => {
+                showMessage('Błąd podczas wczytywania pliku', true);
+            };
+            reader.readAsText(file);
+        }
+
+        // Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const isJSON = file.name.toLowerCase().endsWith('.json') || file.type.includes('json');
+                const isJS = file.name.toLowerCase().endsWith('.js') || file.type.includes('javascript');
+                if (isJSON || isJS || file.type === '' || file.type === 'text/plain') {
+                    loadFile(file);
+                } else {
+                    showMessage('Proszę wybrać plik JSON lub JavaScript', true);
+                }
+            }
+        });
+
+        // Wczytywanie pliku przez input
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadFile(file);
+            }
+        });
+
+        function clearInput() {
+            jsonInput.value = '';
+            filenameInput.value = 'data';
+            message.className = 'message';
+            jsonInput.classList.remove('error');
+            updateContentTypeIndicator();
+            updateStats();
+            originalJSONBeforeStructure = null;
+            document.getElementById('restoreBtn').style.display = 'none';
+            if (autoSaveCheckbox.checked) {
+                localStorage.removeItem('jsonEditor_data');
+            }
+            jsonInput.focus();
+        }
+
+        // Auto-walidacja i statystyki podczas pisania
+        let validationTimeout;
+        let lastContentLength = 0;
+        jsonInput.addEventListener('input', () => {
+            clearTimeout(validationTimeout);
+            jsonInput.classList.remove('error');
+            message.className = 'message';
+            
+            // Resetuj oryginał jeśli zawartość zmieniła się drastycznie (np. wklejenie nowego JSON)
+            const currentLength = jsonInput.value.length;
+            if (Math.abs(currentLength - lastContentLength) > 100) {
+                // Duża zmiana - prawdopodobnie wklejono nowy JSON
+                originalJSONBeforeStructure = null;
+                document.getElementById('restoreBtn').style.display = 'none';
+            }
+            lastContentLength = currentLength;
+            
+            updateContentTypeIndicator();
+            updateStats();
+            saveToLocalStorage();
+        });
+
+        // Aktualizuj statystyki przy zmianie opcji formatowania
+        formatCheckbox.addEventListener('change', () => {
+            const content = jsonInput.value.trim();
+            if (content) {
+                // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
+                try {
+                    const parsed = JSON.parse(content);
+                    // Jeśli parsuje się jako JSON, formatuj/minifikuj
+                    jsonInput.value = formatCheckbox.checked 
+                        ? JSON.stringify(parsed, null, 2)
+                        : JSON.stringify(parsed);
+                    updateStats();
+                    updateContentTypeIndicator();
+                    saveToLocalStorage();
+                } catch (e) {
+                    // Jeśli nie można sparsować jako JSON, nie rób nic (może być JS lub inny typ)
+                    // Nie pokazuj błędu - użytkownik może mieć niepoprawny JSON w trakcie edycji
+                }
+            }
+        });
+
+        // Enter + Ctrl/Cmd do pobrania
+        jsonInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                downloadJSON();
+            }
+        });
+    </script>
+</body>
+</html>
+
