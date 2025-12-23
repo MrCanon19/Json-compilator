@@ -34,7 +34,7 @@
         h1 {
             font-size: 18px;
             font-weight: 600;
-            color: #f0f0f0;
+            color: #e8e8e8;
             margin-bottom: 4px;
             letter-spacing: 0.5px;
         }
@@ -56,7 +56,7 @@
             padding: 14px 20px;
             background: #2a2a2a;
             border: 1px solid #3a3a3a;
-            color: #f0f0f0;
+            color: #e8e8e8;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -144,7 +144,7 @@
         }
 
         textarea::placeholder {
-            color: #555;
+            color: #666;
         }
 
         #jsonOutput {
@@ -236,13 +236,12 @@
             font-size: 10px;
             color: #888;
             margin-bottom: 20px;
-            display: flex;
-            gap: 20px;
             flex-wrap: wrap;
         }
 
         .stats.show {
             display: flex;
+            gap: 20px;
         }
 
         .stat-item {
@@ -386,33 +385,69 @@
             display: none;
         }
 
-        .content-type-indicator {
-            display: none;
-            padding: 2px 6px;
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .content-type-indicator.show {
-            display: inline-block;
-        }
-
-        .content-type-indicator.json {
-            color: #4a9;
-            border-color: #4a9;
-        }
-
-        .content-type-indicator.js {
-            color: #fa4;
-            border-color: #fa4;
-        }
-
         textarea.error {
             border-color: #f44;
             background: #1a0a0a;
+        }
+
+        .diff-view {
+            display: none;
+            padding: 16px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            margin-top: 20px;
+            font-size: 11px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .diff-view.show {
+            display: block;
+        }
+
+        .diff-line {
+            padding: 2px 8px;
+            font-family: inherit;
+            font-size: 11px;
+        }
+
+        .diff-line.removed {
+            background: rgba(255, 68, 68, 0.1);
+            color: #f44;
+        }
+
+        .diff-line.added {
+            background: rgba(68, 170, 153, 0.1);
+            color: #4a9;
+        }
+
+        .diff-line.context {
+            color: #888;
+        }
+
+        .feedback {
+            padding: 10px 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 10px;
+            color: #aaa;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.error {
+            border-color: #f44;
+            color: #f44;
+        }
+
+        .feedback.success {
+            border-color: #4a9;
+            color: #4a9;
         }
 
         @media (max-width: 768px) {
@@ -453,13 +488,15 @@
             <button class="btn-main" onclick="formatOrFix()" id="mainBtn">Napraw JSON</button>
         </div>
 
+        <div id="feedback" class="feedback"></div>
+
         <div class="workspace">
             <div class="panel">
                 <div class="panel-header">
                     <span>Input</span>
                     <span id="inputStatus" class="status"></span>
                 </div>
-                <textarea id="jsonInput" placeholder="Wklej JSON do naprawy..."></textarea>
+                <textarea id="jsonInput" placeholder="JSON czeka."></textarea>
             </div>
 
             <div class="panel">
@@ -476,6 +513,7 @@
             <button class="btn-secondary" onclick="downloadJSON()">Pobierz</button>
             <button class="btn-secondary" onclick="validateContent()">Waliduj</button>
             <button class="btn-secondary" onclick="minifyJSON()">Minify</button>
+            <button class="btn-secondary" onclick="toggleDiff()" id="diffBtn">Pokaż zmiany</button>
             <button class="btn-secondary" onclick="clearInput()">Wyczyść</button>
             <button class="btn-secondary" onclick="toggleOptions()">Opcje</button>
         </div>
@@ -493,7 +531,13 @@
                 <input type="checkbox" id="n8nExportMode" checked>
                 <label for="n8nExportMode">Tryb n8n</label>
             </div>
+            <div class="option-group">
+                <input type="checkbox" id="strictN8N">
+                <label for="strictN8N">Strict n8n JSON</label>
+            </div>
         </div>
+
+        <div id="diffView" class="diff-view"></div>
 
         <div id="stats" class="stats">
             <div class="stat-item"><strong>Rozmiar:</strong> <span id="statSize">-</span></div>
@@ -524,20 +568,34 @@
         const jsonInput = document.getElementById('jsonInput');
         const jsonOutput = document.getElementById('jsonOutput');
         const message = document.getElementById('message');
+        const feedback = document.getElementById('feedback');
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const formatCheckbox = document.getElementById('formatCheckbox');
         const autoSaveCheckbox = document.getElementById('autoSaveCheckbox');
         const n8nExportModeCheckbox = document.getElementById('n8nExportMode');
+        const strictN8NCheckbox = document.getElementById('strictN8N');
         const stats = document.getElementById('stats');
         const mainBtn = document.getElementById('mainBtn');
         const inputStatus = document.getElementById('inputStatus');
         const outputStatus = document.getElementById('outputStatus');
+        const diffView = document.getElementById('diffView');
+        const diffBtn = document.getElementById('diffBtn');
+        let originalJSON = '';
+        let fixedJSON = '';
 
         window.addEventListener('DOMContentLoaded', () => {
             jsonInput.value = '';
             updateStatus();
             updateAutosaveStatus();
+            updatePlaceholder();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                formatOrFix();
+            }
         });
 
         function updateAutosaveStatus() {
@@ -556,6 +614,20 @@
             }
         });
 
+        function updatePlaceholder() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                jsonInput.placeholder = 'JSON czeka.';
+            } else {
+                try {
+                    JSON.parse(content);
+                    jsonInput.placeholder = 'Wklej JSON do naprawy...';
+                } catch (e) {
+                    jsonInput.placeholder = 'Tego nie da się bezpiecznie naprawić.';
+                }
+            }
+        }
+
         function updateStatus() {
             const content = jsonInput.value.trim();
             if (!content) {
@@ -564,6 +636,7 @@
                 outputStatus.textContent = '';
                 outputStatus.className = 'status';
                 mainBtn.disabled = false;
+                updatePlaceholder();
                 return;
             }
 
@@ -571,9 +644,11 @@
                 JSON.parse(content);
                 inputStatus.textContent = 'VALID';
                 inputStatus.className = 'status valid';
+                jsonInput.placeholder = 'Wklej JSON do naprawy...';
             } catch (e) {
                 inputStatus.textContent = 'INVALID';
                 inputStatus.className = 'status invalid';
+                jsonInput.placeholder = 'Tego nie da się bezpiecznie naprawić.';
             }
 
             const outputContent = jsonOutput.value.trim();
@@ -594,6 +669,7 @@
 
         jsonInput.addEventListener('input', () => {
             updateStatus();
+            updatePlaceholder();
             if (autoSaveCheckbox.checked) {
                 saveToLocalStorage();
             }
@@ -609,6 +685,15 @@
             }, 3000);
         }
 
+        function showFeedback(text, isError = false) {
+            feedback.textContent = text;
+            feedback.className = 'feedback show ' + (isError ? 'error' : 'success');
+        }
+
+        function hideFeedback() {
+            feedback.className = 'feedback';
+        }
+
         function saveToLocalStorage() {
             if (autoSaveCheckbox.checked) {
                 localStorage.setItem('jsonEditor_data', jsonInput.value);
@@ -618,6 +703,51 @@
         function toggleOptions() {
             const optionsBar = document.getElementById('optionsBar');
             optionsBar.classList.toggle('show');
+        }
+
+        function toggleDiff() {
+            if (!originalJSON || !fixedJSON) {
+                showMessage('Brak danych do porównania', true);
+                return;
+            }
+            diffView.classList.toggle('show');
+            if (diffView.classList.contains('show')) {
+                showDiff(originalJSON, fixedJSON);
+                diffBtn.textContent = 'Ukryj zmiany';
+            } else {
+                diffBtn.textContent = 'Pokaż zmiany';
+            }
+        }
+
+        function showDiff(original, fixed) {
+            const originalLines = original.split('\n');
+            const fixedLines = fixed.split('\n');
+            const maxLines = Math.max(originalLines.length, fixedLines.length);
+            let html = '';
+
+            for (let i = 0; i < maxLines; i++) {
+                const origLine = originalLines[i] || '';
+                const fixedLine = fixedLines[i] || '';
+
+                if (origLine === fixedLine) {
+                    html += `<div class="diff-line context">${escapeHtml(origLine || ' ')}</div>`;
+                } else {
+                    if (origLine) {
+                        html += `<div class="diff-line removed">- ${escapeHtml(origLine)}</div>`;
+                    }
+                    if (fixedLine) {
+                        html += `<div class="diff-line added">+ ${escapeHtml(fixedLine)}</div>`;
+                    }
+                }
+            }
+
+            diffView.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         function detectContentType(text) {
@@ -690,16 +820,19 @@
             
             if (!content) {
                 showMessage('Pole jest puste', true);
+                showFeedback('Pole jest puste', true);
                 return;
             }
 
+            originalJSON = content;
             mainBtn.disabled = true;
             mainBtn.textContent = 'Przetwarzanie...';
+            hideFeedback();
 
             setTimeout(() => {
                 try {
                     JSON.parse(content);
-                    fixJSON(content);
+                    fixJSON(content, true);
                 } catch (jsonError) {
                     const detection = detectContentType(content);
                     
@@ -708,10 +841,13 @@
                             const formatted = formatJavaScript(content);
                             jsonInput.value = formatted;
                             jsonOutput.value = formatted;
+                            fixedJSON = formatted;
                             showMessage('Kod JavaScript sformatowany');
                             jsonInput.classList.remove('error');
+                            showFeedback('Kod JavaScript sformatowany');
                         } catch (e) {
                             showMessage('Błąd formatowania JavaScript: ' + e.message, true);
+                            showFeedback('Błąd formatowania JavaScript', true);
                         }
                         mainBtn.disabled = false;
                         mainBtn.textContent = 'Napraw JSON';
@@ -719,7 +855,7 @@
                         return;
                     }
 
-                    fixJSON(content);
+                    fixJSON(content, false);
                 }
 
                 mainBtn.disabled = false;
@@ -728,34 +864,43 @@
             }, 10);
         }
 
-        function fixJSON(jsonText) {
+        function fixJSON(jsonText, wasValid = false) {
             let fixed = jsonText;
+            const fixes = [];
+            let fixCount = 0;
 
-            try {
-                const alreadyParsed = JSON.parse(fixed);
-                fixed = formatCheckbox.checked 
-                    ? JSON.stringify(alreadyParsed, null, 2)
-                    : JSON.stringify(alreadyParsed);
-                
-                jsonOutput.value = fixed;
-                jsonInput.value = fixed;
-                jsonInput.classList.remove('error');
-                updateStats();
-                saveToLocalStorage();
-                showMessage('JSON był już poprawny - sformatowano');
-                return;
-            } catch (e) {
-                // JSON ma błędy - kontynuuj naprawę
+            if (wasValid) {
+                try {
+                    const alreadyParsed = JSON.parse(fixed);
+                    fixed = formatCheckbox.checked 
+                        ? JSON.stringify(alreadyParsed, null, 2)
+                        : JSON.stringify(alreadyParsed);
+                    
+                    fixedJSON = fixed;
+                    jsonOutput.value = fixed;
+                    jsonInput.value = fixed;
+                    jsonInput.classList.remove('error');
+                    updateStats();
+                    saveToLocalStorage();
+                    showMessage('JSON był już poprawny - sformatowano');
+                    showFeedback('JSON był już poprawny - sformatowano');
+                    return;
+                } catch (e) {
+                    // Kontynuuj naprawę
+                }
             }
 
             if (fixed.length > 0 && fixed.charCodeAt(0) === 0xFEFF) {
                 fixed = fixed.slice(1);
+                fixes.push('BOM');
+                fixCount++;
             }
 
             let inString = false;
             let escapeNext = false;
             let stringChar = '';
             let result = '';
+            let commentsRemoved = false;
             
             for (let i = 0; i < fixed.length; i++) {
                 const char = fixed[i];
@@ -793,6 +938,7 @@
                 
                 if (char === '/' && i + 1 < fixed.length) {
                     if (fixed[i + 1] === '/') {
+                        commentsRemoved = true;
                         while (i < fixed.length && fixed[i] !== '\n') {
                             i++;
                         }
@@ -802,6 +948,7 @@
                         continue;
                     }
                     if (fixed[i + 1] === '*') {
+                        commentsRemoved = true;
                         i += 2;
                         while (i + 1 < fixed.length) {
                             if (fixed[i] === '*' && fixed[i + 1] === '/') {
@@ -817,15 +964,31 @@
                 result += char;
             }
             
+            if (commentsRemoved) {
+                fixes.push('komentarze');
+                fixCount++;
+            }
             fixed = result;
 
+            const beforeQuotes = fixed;
             fixed = fixed.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+            if (fixed !== beforeQuotes) {
+                fixes.push('cudzysłowy w kluczach');
+                fixCount++;
+            }
+
+            const beforeKeys = fixed;
             fixed = fixed.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+            if (fixed !== beforeKeys) {
+                fixes.push('brakujące cudzysłowy');
+                fixCount++;
+            }
 
             inString = false;
             escapeNext = false;
             stringChar = '';
             result = '';
+            let trailingRemoved = false;
             
             for (let i = 0; i < fixed.length; i++) {
                 const char = fixed[i];
@@ -867,6 +1030,7 @@
                         j++;
                     }
                     if (j < fixed.length && (fixed[j] === '}' || fixed[j] === ']')) {
+                        trailingRemoved = true;
                         i = j - 1;
                         continue;
                     }
@@ -875,12 +1039,17 @@
                 result += char;
             }
             
+            if (trailingRemoved) {
+                fixes.push('trailing commas');
+                fixCount++;
+            }
             fixed = result;
 
             inString = false;
             escapeNext = false;
             stringChar = '';
             result = '';
+            let jsValuesFixed = false;
             
             for (let i = 0; i < fixed.length; i++) {
                 const char = fixed[i];
@@ -919,25 +1088,46 @@
                 if (i + 8 <= fixed.length && fixed.substr(i, 8) === 'undefined') {
                     result += 'null';
                     i += 7;
+                    jsValuesFixed = true;
                     continue;
                 }
                 
                 if (i + 3 <= fixed.length && fixed.substr(i, 3) === 'NaN') {
                     result += 'null';
                     i += 2;
+                    jsValuesFixed = true;
                     continue;
                 }
                 
                 if (i + 8 <= fixed.length && fixed.substr(i, 8) === 'Infinity') {
                     result += 'null';
                     i += 7;
+                    jsValuesFixed = true;
                     continue;
                 }
                 
                 result += char;
             }
             
+            if (jsValuesFixed) {
+                fixes.push('wartości JavaScript');
+                fixCount++;
+            }
+            
             fixed = result.replace(/,,+/g, ',');
+            if (fixed !== result) {
+                fixes.push('podwójne przecinki');
+                fixCount++;
+            }
+
+            if (strictN8NCheckbox.checked) {
+                try {
+                    const parsed = JSON.parse(fixed);
+                    fixed = JSON.stringify(parsed, null, formatCheckbox.checked ? 2 : 0);
+                } catch (e) {
+                    // Ignoruj błędy strict mode
+                }
+            }
 
             try {
                 const parsed = JSON.parse(fixed);
@@ -945,15 +1135,26 @@
                     ? JSON.stringify(parsed, null, 2)
                     : JSON.stringify(parsed);
                 
+                fixedJSON = fixed;
                 jsonOutput.value = fixed;
                 jsonInput.value = fixed;
                 jsonInput.classList.remove('error');
                 updateStats();
                 saveToLocalStorage();
-                showMessage('JSON naprawiony');
+                
+                if (fixCount === 0) {
+                    showMessage('JSON był już poprawny - sformatowano');
+                    showFeedback('JSON był już poprawny - sformatowano');
+                } else {
+                    const fixText = fixCount === 1 ? 'problem' : 'problemów';
+                    const fixesText = fixes.length > 0 ? ': ' + fixes.join(', ') : '';
+                    showMessage(`Naprawiono ${fixCount} ${fixText}. JSON zgodny z n8n.`);
+                    showFeedback(`Naprawiono ${fixCount} ${fixText}${fixesText}. JSON zgodny z n8n.`);
+                }
             } catch (e) {
                 jsonInput.classList.add('error');
-                showMessage('Nie udało się naprawić JSON: ' + e.message, true);
+                showMessage('Tego nie da się bezpiecznie naprawić: ' + e.message, true);
+                showFeedback('Tego nie da się bezpiecznie naprawić.', true);
             }
         }
 
@@ -1034,6 +1235,11 @@
             jsonInput.value = '';
             jsonOutput.value = '';
             jsonInput.classList.remove('error');
+            originalJSON = '';
+            fixedJSON = '';
+            diffView.classList.remove('show');
+            diffBtn.textContent = 'Pokaż zmiany';
+            hideFeedback();
             updateStatus();
             updateStats();
             localStorage.removeItem('jsonEditor_data');
