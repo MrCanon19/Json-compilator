@@ -40,6 +40,15 @@
             }
         }
 
+        .top-banner {
+            background: #ff6d5a;
+            color: white;
+            text-align: center;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
         .header {
             background: #252525;
             border-bottom: 1px solid #404040;
@@ -51,17 +60,20 @@
         }
 
         h1 {
-            color: #ffffff;
+            background: linear-gradient(135deg, #ff6d5a 0%, #9b59b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin: 0 0 4px 0;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
-            color: #a0a0a0;
+            color: #ffffff;
             margin: 0;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 400;
         }
 
@@ -84,6 +96,13 @@
             font-weight: 600;
         }
 
+        .actions-top {
+            padding: 0 32px 20px 32px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
         .main-content {
             padding: 32px;
             display: grid;
@@ -101,10 +120,10 @@
             align-items: center;
             margin-bottom: 8px;
             color: #b0b0b0;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         textarea {
@@ -292,9 +311,9 @@
             padding: 24px 32px;
             background: #252525;
             border-top: 1px solid #404040;
-            font-size: 12px;
-            color: #a0a0a0;
-            line-height: 1.7;
+            font-size: 13px;
+            color: #b0b0b0;
+            line-height: 1.8;
         }
 
         .info strong {
@@ -306,9 +325,31 @@
             background: #1e1e1e;
             padding: 2px 6px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             font-family: 'SF Mono', 'Monaco', monospace;
             color: #d4d4d4;
+        }
+
+        .footer {
+            padding: 24px 32px;
+            background: #1a1a1a;
+            border-top: 1px solid #404040;
+            text-align: center;
+            font-size: 13px;
+            color: #a0a0a0;
+        }
+
+        .footer-privacy {
+            margin-bottom: 12px;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .footer-author {
+            color: #b0b0b0;
         }
 
         .file-drop-zone {
@@ -504,6 +545,11 @@
         }
 
         @media (max-width: 768px) {
+            .top-banner {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
             .header {
                 padding: 20px 24px;
             }
@@ -522,6 +568,16 @@
                 font-size: 12px;
                 flex-direction: column;
                 align-items: flex-start;
+            }
+
+            .actions-top {
+                padding: 0 24px 16px 24px;
+                gap: 8px;
+            }
+
+            .actions-top button {
+                flex: 1;
+                min-width: 120px;
             }
 
             .main-content {
@@ -586,6 +642,11 @@
         }
 
         @media (max-width: 480px) {
+            .top-banner {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
             .header {
                 padding: 16px 20px;
             }
@@ -596,6 +657,15 @@
 
             .subtitle {
                 font-size: 12px;
+            }
+
+            .actions-top {
+                padding: 0 20px 12px 20px;
+                flex-direction: column;
+            }
+
+            .actions-top button {
+                width: 100%;
             }
 
             .info-banner {
@@ -646,9 +716,13 @@
 </head>
 <body>
     <div class="container">
+        <div class="top-banner">
+            ⚡ Narzędzie dla operatorów n8n
+        </div>
+        
         <div class="header">
             <h1>Json Compilator</h1>
-            <p class="subtitle">Napraw błędne dane JSON i zarządzaj workflow n8n</p>
+            <p class="subtitle">Napraw błędne dane JSON i zarządzaj workflow n8n w kilka sekund</p>
         </div>
         
         <div class="info-banner">
@@ -689,19 +763,26 @@
             </div>
         </div>
 
+        <div class="actions-top">
+            <button class="btn-fix" onclick="formatOrFix()">🔧 Napraw i Formatuj</button>
+            <button class="btn-secondary" onclick="minifyJSON()">Minify</button>
+            <button class="btn-secondary" onclick="clearInput()">Wyczyść</button>
+            <button class="btn-secondary" onclick="insertExample()">Wstaw przykład</button>
+        </div>
+
         <div class="main-content">
             <div class="input-group">
                 <label for="jsonInput">
-                    <span>Input</span>
+                    <span>Input (błędny JSON)</span>
                     <span id="contentTypeIndicator" class="content-type-indicator" style="display: none;"></span>
                 </label>
-                <textarea id="jsonInput" placeholder='Wklej tutaj JSON do naprawy...'></textarea>
+                <textarea id="jsonInput" placeholder='Wklej tutaj swój JSON do naprawy...'></textarea>
             </div>
             
             <div class="input-group">
                 <label for="jsonOutput">
-                    <span>Output</span>
-                    <button class="btn-secondary" onclick="copyOutput()" style="padding: 4px 12px; font-size: 11px;">Kopiuj</button>
+                    <span>Output (naprawiony JSON)</span>
+                    <button class="btn-secondary" onclick="copyOutput()" style="padding: 4px 12px; font-size: 11px;">📋 Kopiuj</button>
                 </label>
                 <textarea id="jsonOutput" readonly placeholder='Tutaj pojawi się naprawiony JSON...'></textarea>
             </div>
@@ -731,15 +812,12 @@
 
         <div class="actions-bar">
             <div class="actions-primary">
-                <button class="btn-fix" onclick="formatOrFix()">🔧 Napraw i Formatuj</button>
                 <button class="btn-primary" onclick="downloadJSON()">📥 Pobierz</button>
                 <button class="btn-success" onclick="copyToClipboard()">📋 Kopiuj</button>
                 <button class="btn-secondary" onclick="validateContent()">✓ Waliduj</button>
             </div>
             <div class="actions-secondary">
-                <button class="btn-secondary" onclick="minifyJSON()">Minify</button>
                 <button class="btn-secondary" onclick="beautifyJSON()">Formatuj</button>
-                <button class="btn-secondary" onclick="clearInput()">Wyczyść</button>
                 <button class="btn-secondary" onclick="validateN8N()">n8n</button>
                 <button class="btn-secondary" onclick="exportToN8N()">Eksport</button>
                 <button class="btn-secondary" onclick="showStructure()" id="structureBtn">Struktura</button>
@@ -749,8 +827,8 @@
 
         <div id="message" class="message"></div>
 
-        <div class="info" id="infoSection" style="display: none;">
-            <strong>🔧 Co naprawia funkcja "Napraw i Formatuj":</strong><br>
+        <div class="info" id="infoSection">
+            <strong>🔧 Co naprawia ta funkcja:</strong><br>
             • Pojedyncze cudzysłowy w kluczach: <code>'key'</code> → <code>"key"</code><br>
             • Brakujące cudzysłowy przy kluczach: <code>klucz:</code> → <code>"klucz":</code><br>
             • Komentarze: <code>// komentarz</code> i <code>/* blok */</code><br>
@@ -760,9 +838,15 @@
             • Podwójne przecinki<br>
             • BOM (Byte Order Mark)
         </div>
-        
-        <div class="info" style="text-align: center; padding-top: 16px;">
-            <button onclick="document.getElementById('infoSection').style.display = document.getElementById('infoSection').style.display === 'none' ? 'block' : 'none'; this.textContent = document.getElementById('infoSection').style.display === 'none' ? '📖 Pokaż więcej informacji' : '📖 Ukryj informacje'" class="btn-secondary" style="padding: 8px 16px; font-size: 12px;">📖 Pokaż więcej informacji</button>
+
+        <div class="footer">
+            <div class="footer-privacy">
+                <span>✓</span>
+                <span>Przetwarzane lokalnie w przeglądarce. Twoje dane nie są wysyłane na serwer.</span>
+            </div>
+            <div class="footer-author">
+                Stworzone dla społeczności n8n ❤️
+            </div>
         </div>
     </div>
 
@@ -2511,6 +2595,43 @@
                 localStorage.removeItem('jsonEditor_data');
             }
             jsonInput.focus();
+        }
+
+        function insertExample() {
+            const exampleJSON = `{
+  // To jest komentarz - powinien być usunięty
+  'name': 'Przykładowy workflow',  // Pojedyncze cudzysłowy
+  active: true,  // Brakujące cudzysłowy
+  nodes: [
+    {
+      type: 'n8n-nodes-base.manualTrigger',
+      name: 'Start',
+      parameters: {}
+    },
+    {
+      type: 'n8n-nodes-base.httpRequest',
+      name: 'HTTP Request',
+      parameters: {
+        url: 'https://api.example.com/data',
+        method: 'GET'
+      }
+    }
+  ],
+  connections: {
+    'Start': {
+      main: [[{ node: 'HTTP Request', type: 'main', index: 0 }]]
+    }
+  },
+  settings: undefined,  // undefined powinno być null
+  tags: ['test', 'example',],  // Trailing comma
+}`;
+            
+            jsonInput.value = exampleJSON;
+            updateContentTypeIndicator();
+            updateStats();
+            saveToLocalStorage();
+            jsonInput.focus();
+            showMessage('✓ Przykład wstawiony! Kliknij "Napraw i Formatuj" aby zobaczyć naprawę.');
         }
 
         // Auto-walidacja i statystyki podczas pisania
