@@ -1129,6 +1129,9 @@
             }
             fixed = result;
 
+            // Naprawa podwójnych kluczy "conditions" jest obsługiwana przez funkcję fixDuplicateKeys()
+            // która działa po parsowaniu JSON (regex nie działa dla zagnieżdżonych obiektów)
+
             const beforeQuotes = fixed;
             fixed = fixed.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
             if (fixed !== beforeQuotes) {
