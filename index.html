@@ -996,6 +996,7 @@
                         // Sprawdź czy jest podwójny klucz "conditions" w obiekcie
                         // Jeśli value ma "options" i również tablicę pod kluczem "conditions", napraw to
                         if (value.options && Array.isArray(value.conditions)) {
+                            // Napraw: zmień "conditions" (tablica) na "values"
                             result[key] = {
                                 options: value.options,
                                 values: value.conditions
