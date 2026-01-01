@@ -989,7 +989,34 @@
             
             for (const key in obj) {
                 if (obj.hasOwnProperty(key)) {
-                    const value = fixDuplicateKeys(obj[key]);
+                    let value = fixDuplicateKeys(obj[key]);
+                    
+                    // Napraw pusty value w __rl resource link (n8n nie akceptuje pustego value)
+                    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                        if (value.__rl === true && value.mode && value.value === '') {
+                            // Usuń pusty value - n8n wymaga albo prawidłowej wartości, albo usunięcia pola
+                            value = {
+                                __rl: true,
+                                mode: value.mode
+                            };
+                        }
+                    }
+                    
+                    // Napraw optionName -> optionLabel w formTrigger dropdown (n8n wymaga optionLabel)
+                    if (key === 'fieldOptions' && typeof value === 'object' && value !== null && Array.isArray(value.values)) {
+                        value = {
+                            ...value,
+                            values: value.values.map(opt => {
+                                if (opt.optionName && !opt.optionLabel) {
+                                    return {
+                                        optionLabel: opt.optionName,
+                                        optionValue: opt.optionValue
+                                    };
+                                }
+                                return opt;
+                            })
+                        };
+                    }
                     
                     // Specjalna obsługa dla n8n switch node: jeśli "conditions" zawiera zarówno "options" jak i tablicę "conditions"
                     if (key === 'conditions' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -1030,14 +1057,55 @@
             try {
                 let alreadyParsed = JSON.parse(fixed);
                 
-                // Napraw podwójne klucze również dla poprawnych JSON
+                // Sprawdź czy to pojedynczy node zamiast pełnego workflow - n8n wymaga struktury {nodes: [], connections: {}}
+                const isSingleNode = alreadyParsed.type && alreadyParsed.parameters && !alreadyParsed.nodes;
+                if (isSingleNode) {
+                    // Opakuj pojedynczy node w strukturę workflow
+                    // Generuj unikalne ID (n8n preferuje UUID, ale akceptuje też inne formaty)
+                    const nodeId = alreadyParsed.id || 'form-trigger-' + Date.now();
+                    const nodeName = alreadyParsed.name || alreadyParsed.parameters.formTitle || 'Form Trigger';
+                    
+                    alreadyParsed = {
+                        nodes: [{
+                            ...alreadyParsed,
+                            id: nodeId,
+                            name: nodeName
+                        }],
+                        connections: {}
+                    };
+                    fixes.push('opakowano pojedynczy node w strukturę workflow');
+                    fixCount++;
+                }
+                
+                // Napraw podwójne klucze, puste value w __rl i optionName->optionLabel również dla poprawnych JSON
                 const parsedBeforeFix = JSON.stringify(alreadyParsed);
+                
+                // Sprawdź czy jest pusty value w __rl przed naprawą
+                const hasEmptyRlBefore = parsedBeforeFix.includes('"__rl":true') && parsedBeforeFix.includes('"value":""');
+                // Sprawdź czy jest optionName zamiast optionLabel
+                const hasOptionName = parsedBeforeFix.includes('"optionName"');
+                
                 alreadyParsed = fixDuplicateKeys(alreadyParsed);
                 const parsedAfterFix = JSON.stringify(alreadyParsed);
                 
-                if (parsedBeforeFix !== parsedAfterFix) {
-                    fixes.push('podwójne klucze (n8n switch node)');
-                    fixCount++;
+                if (parsedBeforeFix !== parsedAfterFix || isSingleNode) {
+                    // Sprawdź czy usunięto pusty value w __rl
+                    const hasEmptyRlAfter = parsedAfterFix.includes('"__rl":true') && parsedAfterFix.includes('"value":""');
+                    const hasOptionNameAfter = parsedAfterFix.includes('"optionName"');
+                    
+                    if (hasEmptyRlBefore && !hasEmptyRlAfter) {
+                        fixes.push('pusty value w __rl resource link');
+                        fixCount++;
+                    }
+                    if (hasOptionName && !hasOptionNameAfter) {
+                        fixes.push('optionName -> optionLabel (formTrigger)');
+                        fixCount++;
+                    }
+                    if (!hasEmptyRlBefore && !hasOptionName && !isSingleNode) {
+                        // Jeśli nie było pustego value ani optionName, sprawdź podwójne klucze
+                        fixes.push('podwójne klucze (n8n switch node)');
+                        fixCount++;
+                    }
                 }
                 
                 fixed = formatCheckbox.checked 
@@ -1313,14 +1381,55 @@
             try {
                 let parsed = JSON.parse(fixed);
                 
-                // Napraw podwójne klucze w strukturze n8n (szczególnie switch node)
+                // Sprawdź czy to pojedynczy node zamiast pełnego workflow - n8n wymaga struktury {nodes: [], connections: {}}
+                const isSingleNode = parsed.type && parsed.parameters && !parsed.nodes;
+                if (isSingleNode) {
+                    // Opakuj pojedynczy node w strukturę workflow
+                    // Generuj unikalne ID (n8n preferuje UUID, ale akceptuje też inne formaty)
+                    const nodeId = parsed.id || 'form-trigger-' + Date.now();
+                    const nodeName = parsed.name || parsed.parameters.formTitle || 'Form Trigger';
+                    
+                    parsed = {
+                        nodes: [{
+                            ...parsed,
+                            id: nodeId,
+                            name: nodeName
+                        }],
+                        connections: {}
+                    };
+                    fixes.push('opakowano pojedynczy node w strukturę workflow');
+                    fixCount++;
+                }
+                
+                // Napraw podwójne klucze w strukturze n8n (szczególnie switch node), puste value w __rl i optionName->optionLabel
                 const parsedBeforeFix = JSON.stringify(parsed);
+                
+                // Sprawdź czy jest pusty value w __rl przed naprawą
+                const hasEmptyRlBefore = parsedBeforeFix.includes('"__rl":true') && parsedBeforeFix.includes('"value":""');
+                // Sprawdź czy jest optionName zamiast optionLabel
+                const hasOptionName = parsedBeforeFix.includes('"optionName"');
+                
                 parsed = fixDuplicateKeys(parsed);
                 const parsedAfterFix = JSON.stringify(parsed);
                 
-                if (parsedBeforeFix !== parsedAfterFix) {
-                    fixes.push('podwójne klucze (n8n switch node)');
-                    fixCount++;
+                if (parsedBeforeFix !== parsedAfterFix || isSingleNode) {
+                    // Sprawdź czy usunięto pusty value w __rl
+                    const hasEmptyRlAfter = parsedAfterFix.includes('"__rl":true') && parsedAfterFix.includes('"value":""');
+                    const hasOptionNameAfter = parsedAfterFix.includes('"optionName"');
+                    
+                    if (hasEmptyRlBefore && !hasEmptyRlAfter) {
+                        fixes.push('pusty value w __rl resource link');
+                        fixCount++;
+                    }
+                    if (hasOptionName && !hasOptionNameAfter) {
+                        fixes.push('optionName -> optionLabel (formTrigger)');
+                        fixCount++;
+                    }
+                    if (!hasEmptyRlBefore && !hasOptionName && !isSingleNode) {
+                        // Jeśli nie było pustego value ani optionName, sprawdź podwójne klucze
+                        fixes.push('podwójne klucze (n8n switch node)');
+                        fixCount++;
+                    }
                 }
                 
                         fixed = formatCheckbox.checked 
@@ -1346,7 +1455,7 @@
                     showStatusBar(`Naprawiono ${fixCount} ${fixText}.`, 'success');
                 }
                     } catch (e) {
-                        jsonInput.classList.add('error');
+                    jsonInput.classList.add('error');
                 showMessage('Tego nie da się bezpiecznie naprawić: ' + e.message, true);
                 showFeedback('Tego nie da się bezpiecznie naprawić.', true);
                 showStatusBar('Części nie dało się naprawić.', 'warning');
@@ -1370,7 +1479,7 @@
             const content = jsonOutput.value.trim() || jsonInput.value.trim();
             if (!content) {
                 showMessage('Brak danych do pobrania', true);
-                    return;
+                return;
             }
 
             try {
