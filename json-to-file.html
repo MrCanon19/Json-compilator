@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>n8n Workflow Editor</title>
+    <title>JSON Sanitizer - n8n</title>
     <style>
         * {
             margin: 0;
@@ -12,299 +12,274 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f5;
+            font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+            background: #0a0a0a;
             min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            color: #d0d0d0;
+            line-height: 1.5;
         }
 
         .container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 30px;
             max-width: 1200px;
             margin: 0 auto;
-            width: 100%;
+            padding: 20px;
+        }
+
+        .header {
+            border-bottom: 1px solid #2a2a2a;
+            padding: 16px 0 20px 0;
+            margin-bottom: 24px;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 18px;
+            font-weight: 600;
+            color: #e8e8e8;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
 
         .subtitle {
-            color: #666;
-            margin-bottom: 20px;
-            font-size: 15px;
+            font-size: 11px;
+            color: #888;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .info-banner {
-            background: #f0f7ff;
-            border-left: 4px solid #4a90e2;
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin-bottom: 24px;
+        .main-action {
+            margin-bottom: 20px;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 14px 20px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            color: #e8e8e8;
             font-size: 13px;
-            color: #2c5282;
-            line-height: 1.6;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.1s;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .info-banner strong {
-            color: #1a365d;
+        .btn-main:hover {
+            background: #333;
+            border-color: #444;
         }
 
-        .input-group {
+        .btn-main:active {
+            background: #252525;
+        }
+
+        .btn-main:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
             margin-bottom: 20px;
         }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-            font-size: 14px;
+        .panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            border-bottom: none;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+        }
+
+        .panel-header .status {
+            font-size: 9px;
+            padding: 2px 6px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 2px;
+        }
+
+        .panel-header .status.valid {
+            color: #4a9;
+            border-color: #4a9;
+        }
+
+        .panel-header .status.invalid {
+            color: #f44;
+            border-color: #f44;
         }
 
         textarea {
             width: 100%;
-            min-height: 400px;
+            min-height: 500px;
             padding: 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-            font-size: 14px;
+            border: 1px solid #2a2a2a;
+            background: #0f0f0f;
+            color: #d0d0d0;
+            font-family: inherit;
+            font-size: 12px;
+            line-height: 1.6;
             resize: vertical;
-            transition: border-color 0.2s;
-            background: #fafafa;
+            transition: border-color 0.1s;
         }
 
         textarea:focus {
             outline: none;
-            border-color: #4a90e2;
-            background: white;
+            border-color: #4a4a4a;
         }
 
-        textarea.error {
-            border-color: #e74c3c;
-            background-color: #fee;
+        textarea::placeholder {
+            color: #666;
         }
 
-        .filename-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+        #jsonInput {
+            background: #0f0f0f;
+            border-color: #2a2a2a;
         }
 
-        .filename-input:focus {
-            outline: none;
-            border-color: #4a90e2;
+        #jsonInput:focus {
+            border-color: #4a4a4a;
+            background: #0f0f0f;
         }
 
-        .button-group {
+        #jsonOutput {
+            background: #0a0a0a;
+            border-color: #252525;
+        }
+
+        #jsonOutput:focus {
+            border-color: #3a3a3a;
+            background: #0a0a0a;
+        }
+
+        .actions-secondary {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-download {
-            background: #4a90e2;
-            color: white;
-        }
-
-        .btn-download:hover {
-            background: #357abd;
-        }
-
-        .btn-download:active {
-            transform: translateY(0);
-        }
-
-        .btn-download:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-validate {
-            background: #f5f5f5;
-            color: #333;
-            border: 1px solid #ddd;
-        }
-
-        .btn-validate:hover {
-            background: #e8e8e8;
-        }
-
-        .btn-clear {
-            background: #fff;
-            color: #666;
-            border: 1px solid #ddd;
-        }
-
-        .btn-clear:hover {
-            background: #f5f5f5;
-        }
-
-        .message {
-            margin-top: 16px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-
-        .info {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.7;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .info strong {
-            color: #333;
-        }
-
-        .file-drop-zone {
-            border: 2px dashed #ddd;
-            border-radius: 4px;
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-            cursor: pointer;
-            background: #fafafa;
-        }
-
-        .file-drop-zone:hover, .file-drop-zone.dragover {
-            border-color: #4a90e2;
-            background: #f0f7ff;
-        }
-
-        .file-drop-zone p {
-            color: #666;
-            margin: 5px 0;
-            font-size: 14px;
-        }
-
-        .file-input-hidden {
-            display: none;
-        }
-
-        .options-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 8px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
-        .option-group {
-            flex: 1;
-            min-width: 150px;
+        .btn-secondary {
+            padding: 8px 14px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            color: #aaa;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.1s;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .option-group label {
+        .btn-secondary:hover {
+            background: #1a1a1a;
+            border-color: #333;
+            color: #ccc;
+        }
+
+        .btn-secondary:active {
+            background: #0f0f0f;
+        }
+
+        .btn-secondary.active {
+            background: #1a1a1a;
+            border-color: #4a9;
+            color: #4a9;
+            text-decoration: underline;
+        }
+
+        .info-banner {
+            padding: 10px 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
         }
 
-        .option-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
+        .info-banner strong {
+            color: #aaa;
+        }
+
+        .info-section {
+            padding: 16px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 11px;
+            color: #888;
+            line-height: 1.8;
+            margin-top: 20px;
+        }
+
+        .info-section strong {
+            color: #ccc;
+            display: block;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+        }
+
+        .info-section code {
+            background: #0a0a0a;
+            padding: 2px 4px;
+            border: 1px solid #2a2a2a;
+            font-size: 10px;
+            color: #aaa;
         }
 
         .stats {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
+            display: none;
             padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 13px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
+        .stats.show {
+            display: flex;
+            gap: 20px;
+        }
+
         .stat-item {
-            color: #666;
+            color: #888;
         }
 
         .stat-item strong {
-            color: #333;
-        }
-
-        .btn-copy {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-copy:hover {
-            background: #218838;
-        }
-
-        .btn-n8n {
-            background: #ff6d5a;
-            color: white;
-        }
-
-        .btn-n8n:hover {
-            background: #e55a47;
-        }
-
-        .btn-fix {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .btn-fix:hover {
-            background: #138496;
+            color: #aaa;
+            margin-right: 4px;
         }
 
         .n8n-info {
-            margin-top: 15px;
-            padding: 15px;
-            background: #fff3e0;
-            border-left: 4px solid #ff6d5a;
-            border-radius: 8px;
-            font-size: 13px;
             display: none;
+            padding: 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 20px;
         }
 
         .n8n-info.show {
@@ -312,269 +287,388 @@
         }
 
         .n8n-info h3 {
-            margin: 0 0 10px 0;
-            color: #ff6d5a;
-            font-size: 16px;
+            color: #aaa;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .n8n-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
         }
 
         .n8n-info-item {
-            margin: 5px 0;
-            color: #666;
+            color: #888;
         }
 
         .n8n-info-item strong {
-            color: #333;
+            color: #aaa;
         }
 
-        .template-select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 15px;
-            background: white;
-            cursor: pointer;
-        }
-
-        .template-select:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
-
-        .content-type-indicator {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
             font-size: 11px;
-            font-weight: 600;
-            margin-left: 10px;
-            text-transform: uppercase;
+            color: #d0d0d0;
+            display: none;
+            z-index: 1000;
+            max-width: 400px;
+            font-family: inherit;
         }
 
-        .content-type-indicator.json {
-            background: #28a745;
-            color: white;
+        .message.show {
+            display: block;
         }
 
-        .content-type-indicator.js {
-            background: #ffc107;
-            color: #333;
+        .message.success {
+            border-color: #4a9;
+            color: #4a9;
         }
 
-        .content-type-indicator.unknown {
-            background: #6c757d;
-            color: white;
+        .message.error {
+            border-color: #f44;
+            color: #f44;
+        }
+
+        .options-bar {
+            display: none;
+            padding: 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 20px;
+            font-size: 10px;
+        }
+
+        .options-bar.show {
+            display: block;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .option-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .option-group label {
+            color: #888;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .option-group input[type="checkbox"] {
+            width: 12px;
+            height: 12px;
+            cursor: pointer;
+            accent-color: #4a9;
+        }
+
+        .file-drop-zone {
+            display: none;
+            border: 1px dashed #2a2a2a;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            background: #0f0f0f;
+            transition: border-color 0.1s;
+        }
+
+        .file-drop-zone.show {
+            display: block;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            border-color: #4a4a4a;
+        }
+
+        .file-drop-zone p {
+            color: #888;
+            font-size: 11px;
+            margin: 4px 0;
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        textarea.error {
+            border-color: #f44;
+            background: #1a0a0a;
+        }
+
+        .diff-view {
+            display: none;
+            padding: 16px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            margin-top: 20px;
+            font-size: 11px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .diff-view.show {
+            display: block;
+        }
+
+        .diff-empty {
+            padding: 16px;
+            text-align: center;
+            color: #888;
+            font-size: 11px;
+        }
+
+        .diff-line {
+            padding: 2px 8px;
+            font-family: inherit;
+            font-size: 11px;
+        }
+
+        .diff-line.removed {
+            background: rgba(255, 68, 68, 0.1);
+            color: #f44;
+        }
+
+        .diff-line.added {
+            background: rgba(68, 170, 153, 0.1);
+            color: #4a9;
+        }
+
+        .diff-line.context {
+            color: #888;
+        }
+
+        .feedback {
+            padding: 10px 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 20px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.error {
+            border-color: #f44;
+            color: #f44;
+        }
+
+        .feedback.success {
+            border-color: #4a9;
+            color: #4a9;
+        }
+
+        .feedback.info {
+            border-color: #4a9;
+            color: #aaa;
+        }
+
+        .status-bar {
+            padding: 10px 12px;
+            background: #151515;
+            border: 1px solid #2a2a2a;
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 20px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .status-bar.show {
+            display: block;
+        }
+
+        .status-bar.success {
+            border-color: #4a9;
+            color: #4a9;
+        }
+
+        .status-bar.info {
+            border-color: #4a9;
+            color: #aaa;
+        }
+
+        .status-bar.warning {
+            border-color: #fa4;
+            color: #fa4;
+        }
+
+        @media (max-width: 768px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            textarea {
+                min-height: 300px;
+            }
+
+            .container {
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>n8n Helper</h1>
-        <p class="subtitle">Napraw błędne dane JSON i zarządzaj workflow n8n w kilka sekund</p>
+        <div class="header">
+            <h1>JSON Sanitizer</h1>
+            <p class="subtitle">n8n workflow JSON. Bez niespodzianek.</p>
+        </div>
         
         <div class="info-banner">
-            🔒 <strong>Przetwarzane lokalnie w przeglądarce.</strong> Twoje dane nie są wysyłane na serwer.
-            <span id="autosaveStatus" style="display: none; margin-left: 15px;">💾 Auto-save włączony</span>
+            <span>●</span>
+            <span><strong>Lokalne przetwarzanie.</strong> Dane nie opuszczają przeglądarki.</span>
+            <span id="autosaveStatus" style="display: none; margin-left: auto; color: #888;">Auto-save</span>
+            <span id="offlineStatus" style="margin-left: auto; color: #4a9;">Offline</span>
         </div>
 
         <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <p><strong>📁 Kliknij lub przeciągnij plik JSON tutaj</strong></p>
-            <p style="font-size: 12px; color: #999;">lub wpisz JSON poniżej</p>
+            <p><strong>Przeciągnij plik JSON</strong></p>
+            <p>lub wklej poniżej</p>
             <input type="file" id="fileInput" class="file-input-hidden" accept=".json,.js,application/json,text/javascript,text/plain">
         </div>
 
-        <div class="input-group">
-            <label for="templateSelect">Szablon workflow n8n (opcjonalnie):</label>
-            <select id="templateSelect" class="template-select" onchange="loadTemplate()">
-                <option value="">-- Wybierz szablon --</option>
-                <option value="empty">Pusty workflow</option>
-                <option value="webhook">Webhook → HTTP Request</option>
-                <option value="schedule">Schedule → Task</option>
-                <option value="manual">Manual Trigger</option>
-            </select>
+        <div class="main-action">
+            <button class="btn-main" onclick="formatOrFix()" id="mainBtn" title="Ctrl/Cmd + Enter">Napraw JSON</button>
         </div>
 
-        <div class="input-group">
-            <label for="jsonInput">
-                Workflow JSON (n8n):
-                <span id="contentTypeIndicator" class="content-type-indicator" style="display: none;"></span>
-            </label>
-            <textarea id="jsonInput" placeholder='Wklej tutaj workflow n8n w formacie JSON (skopiuj z n8n i wklej tutaj) lub użyj szablonu powyżej'></textarea>
+        <div id="statusBar" class="status-bar"></div>
+        <div id="feedback" class="feedback"></div>
+
+        <div class="workspace">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Input</span>
+                    <span id="inputStatus" class="status"></span>
+                </div>
+                <textarea id="jsonInput" placeholder="JSON czeka."></textarea>
         </div>
 
-        <div class="options-row">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Output</span>
+                    <span id="outputStatus" class="status"></span>
+                </div>
+                <textarea id="jsonOutput" readonly placeholder="Naprawiony JSON pojawi się tutaj..."></textarea>
+            </div>
+        </div>
+
+        <div class="actions-secondary">
+            <button class="btn-secondary" onclick="copyOutput()">Kopiuj</button>
+            <button class="btn-secondary" onclick="downloadJSON()">Pobierz</button>
+            <button class="btn-secondary" onclick="validateContent()">Waliduj</button>
+            <button class="btn-secondary" onclick="minifyJSON()">Minify</button>
+            <button class="btn-secondary" onclick="toggleDiff()" id="diffBtn">Pokaż zmiany</button>
+            <button class="btn-secondary" onclick="clearInput()">Wyczyść</button>
+            <button class="btn-secondary" onclick="toggleOptions()">Opcje</button>
+        </div>
+
+        <div class="options-bar" id="optionsBar">
             <div class="option-group">
-                <label>
                     <input type="checkbox" id="formatCheckbox" checked>
-                    <span>Formatuj JSON (pretty print)</span>
-                </label>
+                <label for="formatCheckbox">Formatuj JSON</label>
             </div>
             <div class="option-group">
-                <label>
                     <input type="checkbox" id="autoSaveCheckbox" checked>
-                    <span>Zapisz lokalnie (auto-save)</span>
-                </label>
+                <label for="autoSaveCheckbox">Auto-save</label>
             </div>
             <div class="option-group">
-                <label>
                     <input type="checkbox" id="n8nExportMode" checked>
-                    <span>Tryb eksportu n8n (zawsze .json)</span>
-                </label>
+                <label for="n8nExportMode">Tryb n8n</label>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="strictN8N">
+                <label for="strictN8N">Strict n8n JSON</label>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="offlineMode" checked>
+                <label for="offlineMode">Offline mode (default)</label>
             </div>
         </div>
 
-        <div id="stats" class="stats" style="display: none;">
+        <div id="diffView" class="diff-view"></div>
+
+        <div id="stats" class="stats">
             <div class="stat-item"><strong>Rozmiar:</strong> <span id="statSize">-</span></div>
             <div class="stat-item"><strong>Klucze:</strong> <span id="statKeys">-</span></div>
             <div class="stat-item"><strong>Poziomy:</strong> <span id="statDepth">-</span></div>
         </div>
 
         <div id="n8nInfo" class="n8n-info">
-            <h3>📊 Informacje o workflow n8n</h3>
+            <h3>Workflow n8n</h3>
+            <div class="n8n-info-grid">
             <div class="n8n-info-item"><strong>Nazwa:</strong> <span id="n8nName">-</span></div>
             <div class="n8n-info-item"><strong>Węzły:</strong> <span id="n8nNodes">-</span></div>
             <div class="n8n-info-item"><strong>Połączenia:</strong> <span id="n8nConnections">-</span></div>
             <div class="n8n-info-item"><strong>Wersja:</strong> <span id="n8nVersion">-</span></div>
             <div class="n8n-info-item"><strong>Aktywne:</strong> <span id="n8nActive">-</span></div>
         </div>
-
-        <div class="input-group">
-            <label for="filenameInput">Nazwa pliku (bez rozszerzenia):</label>
-            <input type="text" id="filenameInput" class="filename-input" placeholder="data" value="data">
         </div>
 
-        <div class="button-group" style="flex-wrap: wrap;">
-            <button class="btn-validate" onclick="validateContent()">Waliduj JSON</button>
-            <button class="btn-fix" onclick="formatOrFix()">🔧 Formatuj/Napraw</button>
-            <button class="btn-n8n" onclick="validateN8N()">Waliduj n8n</button>
-            <button class="btn-n8n" onclick="exportToN8N()" style="background: #ff6d5a;">📥 Eksportuj do n8n</button>
-            <button class="btn-copy" onclick="copyToClipboard()">Kopiuj JSON</button>
-            <button class="btn-download" onclick="downloadJSON()">Pobierz JSON</button>
-            <button class="btn-clear" onclick="clearInput()">Wyczyść</button>
-        </div>
-        
-        <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn-validate" onclick="minifyJSON()" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px;">Minifikuj JSON</button>
-            <button class="btn-validate" onclick="beautifyJSON()" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px;">Sformatuj JSON</button>
-            <button class="btn-validate" onclick="showStructure()" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px;">Pokaż strukturę</button>
-            <button class="btn-validate" onclick="restoreOriginal()" id="restoreBtn" style="flex: 0 0 auto; padding: 8px 16px; font-size: 13px; display: none;">Przywróć oryginał</button>
+        <div class="info-section">
+            <strong>Naprawia:</strong>
+            Cudzysłowy w kluczach, brakujące przecinki, komentarze, trailing commas, wartości JavaScript (undefined/NaN/Infinity → null), BOM.
         </div>
 
         <div id="message" class="message"></div>
-
-        <div class="info">
-            <strong>📖 SZCZEGÓŁOWA INSTRUKCJA UŻYCIA</strong><br><br>
-            
-            <strong>🎯 SCENARIUSZ 1: Eksport workflow z n8n i import z powrotem</strong><br>
-            <strong>Kiedy:</strong> Chcesz wyeksportować workflow z n8n, edytować i zaimportować z powrotem<br>
-            <strong>Kroki:</strong><br>
-            1. W n8n: Menu → Export (skopiuj JSON)<br>
-            2. Wklej JSON tutaj (Ctrl/Cmd+V)<br>
-            3. <strong>"Waliduj JSON"</strong> - sprawdź czy jest poprawny<br>
-            4. Jeśli błędy: <strong>"🔧 Formatuj/Napraw"</strong> - automatycznie naprawi<br>
-            5. <strong>"📥 Eksportuj do n8n"</strong> - pobierz plik<br>
-            6. W n8n: Menu → Import from File → wybierz pobrany plik<br><br>
-            
-            <strong>🎯 SCENARIUSZ 2: Edycja istniejącego workflow</strong><br>
-            <strong>Kiedy:</strong> Chcesz zmienić coś w workflow (np. nazwę, parametry)<br>
-            <strong>Kroki:</strong><br>
-            1. Wklej JSON z n8n<br>
-            2. Edytuj ręcznie w edytorze (np. zmień nazwę, parametry)<br>
-            3. <strong>"Waliduj JSON"</strong> - sprawdź czy nie zepsułeś składni<br>
-            4. Jeśli błędy: <strong>"🔧 Formatuj/Napraw"</strong><br>
-            5. <strong>"Waliduj n8n"</strong> - sprawdź strukturę workflow<br>
-            6. <strong>"📥 Eksportuj do n8n"</strong> - pobierz<br>
-            7. Import w n8n<br><br>
-            
-            <strong>🎯 SCENARIUSZ 3: Analiza dużego workflow</strong><br>
-            <strong>Kiedy:</strong> Chcesz szybko zobaczyć strukturę bez scrollowania<br>
-            <strong>Kroki:</strong><br>
-            1. Wklej JSON<br>
-            2. <strong>"Pokaż strukturę"</strong> - zobacz tylko klucze i typy<br>
-            3. Analizuj strukturę<br>
-            4. <strong>"Przywróć oryginał"</strong> - wróć do pełnego JSON<br>
-            5. Edytuj jeśli potrzeba<br>
-            6. Eksportuj<br><br>
-            
-            <strong>🎯 SCENARIUSZ 4: Naprawa uszkodzonego JSON</strong><br>
-            <strong>Kiedy:</strong> Masz JSON z błędami (komentarze, brakujące przecinki, itp.)<br>
-            <strong>Kroki:</strong><br>
-            1. Wklej uszkodzony JSON<br>
-            2. <strong>"Waliduj JSON"</strong> - zobacz błąd<br>
-            3. <strong>"🔧 Formatuj/Napraw"</strong> - automatyczna naprawa:<br>
-               • Usuwa komentarze (// i /* */)<br>
-               • Naprawia brakujące przecinki<br>
-               • Zamienia pojedyncze cudzysłowy na podwójne<br>
-               • Usuwa trailing commas<br>
-               • Zamienia undefined/NaN/Infinity na null<br>
-            4. Jeśli nadal błędy - sprawdź komunikat z lokalizacją<br>
-            5. Napraw ręcznie w miejscu wskazanym<br>
-            6. Powtórz walidację<br><br>
-            
-            <strong>🔍 KIEDY UŻYWAĆ JAKICH PRZYCISKÓW:</strong><br>
-            • <strong>"Waliduj JSON"</strong> - ZAWSZE przed eksportem, po edycji, gdy widzisz błąd<br>
-            • <strong>"🔧 Formatuj/Napraw"</strong> - gdy JSON ma błędy, po wklejeniu z zewnętrznego źródła<br>
-            • <strong>"Waliduj n8n"</strong> - przed eksportem do n8n, sprawdza strukturę workflow<br>
-            • <strong>"📥 Eksportuj do n8n"</strong> - gdy chcesz gotowy plik do importu (zawsze formatuje)<br>
-            • <strong>"Pobierz JSON"</strong> - gdy chcesz kontrolować formatowanie (respektuje checkbox)<br>
-            • <strong>"Kopiuj JSON"</strong> - gdy chcesz wkleić gdzie indziej<br>
-            • <strong>"Sformatuj JSON"</strong> - gdy chcesz ładnie wyświetlić (pretty print)<br>
-            • <strong>"Minifikuj JSON"</strong> - gdy chcesz zmniejszyć rozmiar pliku<br>
-            • <strong>"Pokaż strukturę"</strong> - gdy chcesz szybko przejrzeć duże workflow<br><br>
-            
-            <strong>💡 OPCJE - KIEDY WŁĄCZYĆ/WYŁĄCZYĆ:</strong><br>
-            • <strong>"Formatuj JSON"</strong> - ZAWSZE WŁĄCZONE (łatwiej czytać i edytować)<br>
-            • <strong>"Tryb eksportu n8n"</strong> - ZAWSZE WŁĄCZONE (zapewnia .json dla n8n)<br>
-            • <strong>"Zapisz lokalnie"</strong> - WŁĄCZONE jeśli chcesz auto-zapis (przydatne przy długiej edycji)<br><br>
-            
-            <strong>⚡ SKRÓTY KLAWISZOWE:</strong><br>
-            • Ctrl/Cmd + Enter = szybkie pobranie JSON<br>
-            • Przeciągnij plik .json = automatyczne wczytanie<br><br>
-            
-            <strong>🛡️ BEZPIECZEŃSTWO:</strong><br>
-            • Wszystkie naprawy są bezpieczne - nie zmieniają danych, tylko składnię<br>
-            • "Pokaż strukturę" zapisuje oryginał - możesz zawsze przywrócić<br>
-            • Auto-save zapisuje lokalnie w przeglądarce (nie wysyła nigdzie)<br><br>
-            
-            <strong>🔧 Co naprawia funkcja "Formatuj/Napraw":</strong><br>
-            • Pythonowe wartości: <code>True</code> → <code>true</code>, <code>False</code> → <code>false</code>, <code>None</code> → <code>null</code><br>
-            • Pojedyncze cudzysłowy: <code>'value'</code> → <code>"value"</code><br>
-            • Brakujące cudzysłowy przy kluczach: <code>klucz:</code> → <code>"klucz":</code><br>
-            • Komentarze: <code>// komentarz</code> i <code>/* blok */</code><br>
-            • Trailing commas: <code>["a", "b",]</code> → <code>["a", "b"]</code><br>
-            • Brakujące przecinki między właściwościami<br>
-            • JavaScript wartości: <code>undefined</code> → <code>null</code>, <code>NaN</code> → <code>null</code>, <code>Infinity</code> → <code>null</code><br>
-            • Podwójne przecinki<br>
-            • BOM (Byte Order Mark)<br><br>
-            
-            <strong>🔒 PRZETWARZANIE LOKALNE:</strong><br>
-            Wszystkie operacje wykonywane są w Twojej przeglądarce. Żadne dane nie są wysyłane na serwer.
-        </div>
     </div>
 
     <script>
         const jsonInput = document.getElementById('jsonInput');
-        const filenameInput = document.getElementById('filenameInput');
+        const jsonOutput = document.getElementById('jsonOutput');
         const message = document.getElementById('message');
+        const feedback = document.getElementById('feedback');
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const formatCheckbox = document.getElementById('formatCheckbox');
         const autoSaveCheckbox = document.getElementById('autoSaveCheckbox');
         const n8nExportModeCheckbox = document.getElementById('n8nExportMode');
+        const strictN8NCheckbox = document.getElementById('strictN8N');
+        const offlineModeCheckbox = document.getElementById('offlineMode');
         const stats = document.getElementById('stats');
+        const mainBtn = document.getElementById('mainBtn');
+        const inputStatus = document.getElementById('inputStatus');
+        const outputStatus = document.getElementById('outputStatus');
+        const diffView = document.getElementById('diffView');
+        const diffBtn = document.getElementById('diffBtn');
+        const statusBar = document.getElementById('statusBar');
+        let originalJSON = '';
+        let fixedJSON = '';
 
-        // NIE wczytuj zapisanego JSON przy starcie - zawsze zaczynaj z pustym polem
         window.addEventListener('DOMContentLoaded', () => {
-            // Wyczyść pole przy starcie
             jsonInput.value = '';
-            filenameInput.value = 'data';
-            updateContentTypeIndicator();
-            updateStats();
+            updateStatus();
             updateAutosaveStatus();
+            updateOfflineStatus();
+            updatePlaceholder();
         });
 
-        // Funkcja do aktualizacji statusu autosave
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                formatOrFix();
+            }
+        });
+
         function updateAutosaveStatus() {
             const autosaveStatus = document.getElementById('autosaveStatus');
             if (autoSaveCheckbox.checked) {
@@ -584,7 +678,6 @@
             }
         }
 
-        // Aktualizuj status autosave przy zmianie checkboxa
         autoSaveCheckbox.addEventListener('change', () => {
             updateAutosaveStatus();
             if (!autoSaveCheckbox.checked) {
@@ -592,33 +685,714 @@
             }
         });
 
+        function updateOfflineStatus() {
+            const offlineStatus = document.getElementById('offlineStatus');
+            if (offlineModeCheckbox.checked) {
+                offlineStatus.style.display = 'inline';
+                offlineStatus.textContent = 'Offline';
+            } else {
+                offlineStatus.style.display = 'none';
+            }
+        }
+
+        offlineModeCheckbox.addEventListener('change', () => {
+            updateOfflineStatus();
+            if (!offlineModeCheckbox.checked) {
+                showMessage('Tryb online włączony', false);
+            } else {
+                showMessage('Tryb offline włączony', false);
+            }
+        });
+
+        function updatePlaceholder() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                jsonInput.placeholder = 'JSON czeka.';
+            } else {
+                try {
+                    JSON.parse(content);
+                    jsonInput.placeholder = 'Wklej JSON do naprawy...';
+            } catch (e) {
+                    jsonInput.placeholder = 'Tego nie da się bezpiecznie naprawić.';
+                }
+            }
+        }
+
+        function updateStatus() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                inputStatus.textContent = '';
+                inputStatus.className = 'status';
+                outputStatus.textContent = '';
+                outputStatus.className = 'status';
+                mainBtn.disabled = false;
+                updatePlaceholder();
+                return;
+            }
+
+            try {
+                JSON.parse(content);
+                inputStatus.textContent = 'VALID';
+                inputStatus.className = 'status valid';
+                jsonInput.placeholder = 'Wklej JSON do naprawy...';
+            } catch (e) {
+                inputStatus.textContent = 'INVALID';
+                inputStatus.className = 'status invalid';
+                jsonInput.placeholder = 'Tego nie da się bezpiecznie naprawić.';
+            }
+
+            const outputContent = jsonOutput.value.trim();
+            if (outputContent) {
+                try {
+                    JSON.parse(outputContent);
+                    outputStatus.textContent = 'VALID';
+                    outputStatus.className = 'status valid';
+            } catch (e) {
+                    outputStatus.textContent = 'INVALID';
+                    outputStatus.className = 'status invalid';
+                }
+            } else {
+                outputStatus.textContent = '';
+                outputStatus.className = 'status';
+            }
+        }
+
+        jsonInput.addEventListener('input', () => {
+            updateStatus();
+            updatePlaceholder();
+            if (autoSaveCheckbox.checked) {
+                saveToLocalStorage();
+            }
+        });
+
+        jsonOutput.addEventListener('input', updateStatus);
+
         function showMessage(text, isError = false) {
             message.textContent = text;
-            message.className = 'message ' + (isError ? 'error' : 'success');
+            message.className = 'message show ' + (isError ? 'error' : 'success');
             setTimeout(() => {
                 message.className = 'message';
-            }, 5000);
+            }, 3000);
+        }
+
+        function showFeedback(text, isError = false) {
+            feedback.textContent = text;
+            feedback.className = 'feedback show ' + (isError ? 'error' : 'success');
+        }
+
+        function hideFeedback() {
+            feedback.className = 'feedback';
+        }
+
+        function showStatusBar(text, type = 'info') {
+            statusBar.textContent = text;
+            statusBar.className = 'status-bar show ' + type;
+        }
+
+        function hideStatusBar() {
+            statusBar.className = 'status-bar';
+        }
+
+        function saveToLocalStorage() {
+            if (autoSaveCheckbox.checked) {
+                localStorage.setItem('jsonEditor_data', jsonInput.value);
+            }
+        }
+
+        function toggleOptions() {
+            const optionsBar = document.getElementById('optionsBar');
+            optionsBar.classList.toggle('show');
+        }
+
+        function toggleDiff() {
+            if (!originalJSON || !fixedJSON) {
+                showMessage('Brak danych do porównania', true);
+                return;
+            }
+            
+            const hasChanges = originalJSON !== fixedJSON;
+            
+            if (!hasChanges) {
+                diffView.innerHTML = '<div class="diff-empty">Brak różnic do pokazania.</div>';
+                diffView.classList.add('show');
+                diffBtn.classList.add('active');
+                diffBtn.textContent = 'Ukryj zmiany';
+                return;
+            }
+            
+            diffView.classList.toggle('show');
+            if (diffView.classList.contains('show')) {
+                showDiff(originalJSON, fixedJSON);
+                diffBtn.classList.add('active');
+                diffBtn.textContent = 'Ukryj zmiany';
+            } else {
+                diffBtn.classList.remove('active');
+                diffBtn.textContent = 'Pokaż zmiany';
+            }
+        }
+
+        function showDiff(original, fixed) {
+            const originalLines = original.split('\n');
+            const fixedLines = fixed.split('\n');
+            const maxLines = Math.max(originalLines.length, fixedLines.length);
+            let html = '';
+
+            for (let i = 0; i < maxLines; i++) {
+                const origLine = originalLines[i] || '';
+                const fixedLine = fixedLines[i] || '';
+
+                if (origLine === fixedLine) {
+                    html += `<div class="diff-line context">${escapeHtml(origLine || ' ')}</div>`;
+                } else {
+                    if (origLine) {
+                        html += `<div class="diff-line removed">- ${escapeHtml(origLine)}</div>`;
+                    }
+                    if (fixedLine) {
+                        html += `<div class="diff-line added">+ ${escapeHtml(fixedLine)}</div>`;
+                    }
+                }
+            }
+
+            diffView.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function detectContentType(text) {
+            if (!text || !text.trim()) {
+                return { type: 'unknown', confidence: 0 };
+            }
+
+            const trimmed = text.trim();
+            
+            try {
+                JSON.parse(trimmed);
+                return { type: 'json', confidence: 1.0 };
+            } catch (e) {
+                // Nie jest poprawnym JSON
+            }
+
+            const jsPatterns = [
+                /^\s*(var|let|const|function|if|for|while|return|class|export|import)\s+/m,
+                /;\s*$/m,
+                /=>\s*{?/m,
+                /\$node\[/m,
+                /items\.length/m
+            ];
+            
+            if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+                const jsMatches = jsPatterns.filter(pattern => pattern.test(trimmed)).length;
+                if (jsMatches >= 1) {
+                    return { type: 'js', confidence: 0.9 };
+                }
+                return { type: 'unknown', confidence: 0.4 };
+            }
+            
+            const jsMatches = jsPatterns.filter(pattern => pattern.test(trimmed)).length;
+            if (jsMatches >= 3) {
+                return { type: 'js', confidence: 0.8 };
+            }
+
+            return { type: 'unknown', confidence: 0.5 };
+        }
+
+        function formatJavaScript(code) {
+            const lines = code.split('\n');
+            const formatted = [];
+            let lastNonEmpty = -1;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const trimmed = line.trim();
+                
+                if (!trimmed) {
+                    if (lastNonEmpty >= 0 && i - lastNonEmpty <= 2) {
+                        formatted.push('');
+                    }
+                    continue;
+                }
+                
+                formatted.push(line);
+                lastNonEmpty = i;
+            }
+            
+            while (formatted.length > 0 && !formatted[formatted.length - 1].trim()) {
+                formatted.pop();
+            }
+            
+            return formatted.join('\n');
+        }
+
+        function formatOrFix() {
+            const content = jsonInput.value.trim();
+            
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                showFeedback('Pole jest puste', true);
+                return;
+            }
+
+            originalJSON = content;
+            mainBtn.disabled = true;
+            mainBtn.textContent = 'Przetwarzanie...';
+            hideFeedback();
+
+            setTimeout(() => {
+            try {
+                JSON.parse(content);
+                    fixJSON(content, true);
+            } catch (jsonError) {
+                const detection = detectContentType(content);
+                
+                if (detection.type === 'js') {
+                    try {
+                        const formatted = formatJavaScript(content);
+                        jsonInput.value = formatted;
+                            jsonOutput.value = formatted;
+                            fixedJSON = formatted;
+                            showMessage('Kod JavaScript sformatowany');
+                        jsonInput.classList.remove('error');
+                            showFeedback('Kod JavaScript sformatowany');
+                    } catch (e) {
+                            showMessage('Błąd formatowania JavaScript: ' + e.message, true);
+                            showFeedback('Błąd formatowania JavaScript', true);
+                    }
+                        mainBtn.disabled = false;
+                        mainBtn.textContent = 'Napraw JSON';
+                        updateStatus();
+                    return;
+                }
+
+                    fixJSON(content, false);
+            }
+
+                mainBtn.disabled = false;
+                mainBtn.textContent = 'Napraw JSON';
+                updateStatus();
+            }, 10);
+        }
+
+        function fixJSON(jsonText, wasValid = false) {
+            let fixed = jsonText;
+            const fixes = [];
+            let fixCount = 0;
+
+            if (wasValid) {
+            try {
+                const alreadyParsed = JSON.parse(fixed);
+                fixed = formatCheckbox.checked 
+                    ? JSON.stringify(alreadyParsed, null, 2)
+                    : JSON.stringify(alreadyParsed);
+                
+                    fixedJSON = fixed;
+                    jsonOutput.value = fixed;
+                jsonInput.value = fixed;
+                jsonInput.classList.remove('error');
+                updateStats();
+                saveToLocalStorage();
+                    showMessage('JSON był już poprawny - sformatowano');
+                    showFeedback('JSON był już poprawny - sformatowano');
+                    showStatusBar('JSON był poprawny – brak zmian.', 'info');
+                    return;
+            } catch (e) {
+                    // Kontynuuj naprawę
+                }
+            }
+
+            if (fixed.length > 0 && fixed.charCodeAt(0) === 0xFEFF) {
+                fixed = fixed.slice(1);
+                fixes.push('BOM');
+                fixCount++;
+            }
+
+            let inString = false;
+            let escapeNext = false;
+            let stringChar = '';
+            let result = '';
+            let commentsRemoved = false;
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    result += char;
+                    continue;
+                }
+                
+                if (char === '/' && i + 1 < fixed.length) {
+                    if (fixed[i + 1] === '/') {
+                        commentsRemoved = true;
+                        while (i < fixed.length && fixed[i] !== '\n') {
+                            i++;
+                        }
+                        if (i < fixed.length) {
+                            result += '\n';
+                        }
+                        continue;
+                    }
+                    if (fixed[i + 1] === '*') {
+                        commentsRemoved = true;
+                        i += 2;
+                        while (i + 1 < fixed.length) {
+                            if (fixed[i] === '*' && fixed[i + 1] === '/') {
+                                i += 2;
+                                break;
+                            }
+                            i++;
+                        }
+                        continue;
+                    }
+                }
+                
+                result += char;
+            }
+            
+            if (commentsRemoved) {
+                fixes.push('komentarze');
+                fixCount++;
+            }
+            fixed = result;
+
+            const beforeQuotes = fixed;
+            fixed = fixed.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+            if (fixed !== beforeQuotes) {
+                fixes.push('cudzysłowy w kluczach');
+                fixCount++;
+            }
+
+            const beforeKeys = fixed;
+            fixed = fixed.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+            if (fixed !== beforeKeys) {
+                fixes.push('brakujące cudzysłowy');
+                fixCount++;
+            }
+
+            inString = false;
+            escapeNext = false;
+            stringChar = '';
+            result = '';
+            let trailingRemoved = false;
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    result += char;
+                    continue;
+                }
+                
+                if (char === ',' && i + 1 < fixed.length) {
+                    let j = i + 1;
+                    while (j < fixed.length && /\s/.test(fixed[j])) {
+                        j++;
+                    }
+                    if (j < fixed.length && (fixed[j] === '}' || fixed[j] === ']')) {
+                        trailingRemoved = true;
+                        i = j - 1;
+                        continue;
+                    }
+                }
+                
+                result += char;
+            }
+            
+            if (trailingRemoved) {
+                fixes.push('trailing commas');
+                fixCount++;
+            }
+            fixed = result;
+
+            inString = false;
+            escapeNext = false;
+            stringChar = '';
+            result = '';
+            let jsValuesFixed = false;
+            
+            for (let i = 0; i < fixed.length; i++) {
+                const char = fixed[i];
+                
+                if (escapeNext) {
+                    result += char;
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    result += char;
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if ((char === '"' || char === "'") && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    result += char;
+                    continue;
+                }
+                
+                if (char === stringChar && inString) {
+                    inString = false;
+                    stringChar = '';
+                    result += char;
+                    continue;
+                }
+                
+                if (inString) {
+                    result += char;
+                    continue;
+                }
+                
+                if (i + 8 <= fixed.length && fixed.substr(i, 8) === 'undefined') {
+                        result += 'null';
+                    i += 7;
+                    jsValuesFixed = true;
+                        continue;
+                }
+                
+                if (i + 3 <= fixed.length && fixed.substr(i, 3) === 'NaN') {
+                        result += 'null';
+                        i += 2;
+                    jsValuesFixed = true;
+                        continue;
+                }
+                
+                if (i + 8 <= fixed.length && fixed.substr(i, 8) === 'Infinity') {
+                        result += 'null';
+                        i += 7;
+                    jsValuesFixed = true;
+                        continue;
+                }
+                
+                result += char;
+            }
+            
+            if (jsValuesFixed) {
+                fixes.push('wartości JavaScript');
+                fixCount++;
+            }
+            
+            fixed = result.replace(/,,+/g, ',');
+            if (fixed !== result) {
+                fixes.push('podwójne przecinki');
+                fixCount++;
+            }
+
+            if (strictN8NCheckbox.checked) {
+                try {
+                    const parsed = JSON.parse(fixed);
+                    fixed = JSON.stringify(parsed, null, formatCheckbox.checked ? 2 : 0);
+            } catch (e) {
+                    // Ignoruj błędy strict mode
+                }
+            }
+
+            try {
+                const parsed = JSON.parse(fixed);
+                        fixed = formatCheckbox.checked 
+                            ? JSON.stringify(parsed, null, 2)
+                            : JSON.stringify(parsed);
+                        
+                fixedJSON = fixed;
+                jsonOutput.value = fixed;
+                        jsonInput.value = fixed;
+                        jsonInput.classList.remove('error');
+                        updateStats();
+                        saveToLocalStorage();
+                
+                if (fixCount === 0) {
+                    showMessage('JSON był już poprawny - sformatowano');
+                    showFeedback('JSON był już poprawny - sformatowano');
+                    showStatusBar('JSON był poprawny – brak zmian.', 'info');
+                    } else {
+                    const fixText = fixCount === 1 ? 'problem' : 'problemów';
+                    const fixesText = fixes.length > 0 ? ': ' + fixes.join(', ') : '';
+                    showMessage(`Naprawiono ${fixCount} ${fixText}. JSON zgodny z n8n.`);
+                    showFeedback(`Naprawiono ${fixCount} ${fixText}${fixesText}. JSON zgodny z n8n.`);
+                    showStatusBar(`Naprawiono ${fixCount} ${fixText}.`, 'success');
+                }
+                    } catch (e) {
+                        jsonInput.classList.add('error');
+                showMessage('Tego nie da się bezpiecznie naprawić: ' + e.message, true);
+                showFeedback('Tego nie da się bezpiecznie naprawić.', true);
+                showStatusBar('Części nie dało się naprawić.', 'warning');
+            }
+        }
+
+        function copyOutput() {
+            const content = jsonOutput.value.trim();
+            if (!content) {
+                showMessage('Brak danych do skopiowania', true);
+                return;
+            }
+            navigator.clipboard.writeText(content).then(() => {
+                showMessage('Skopiowano do schowka');
+            }).catch(() => {
+                showMessage('Błąd kopiowania', true);
+            });
+        }
+
+        function downloadJSON() {
+            const content = jsonOutput.value.trim() || jsonInput.value.trim();
+            if (!content) {
+                showMessage('Brak danych do pobrania', true);
+                    return;
+            }
+
+            try {
+                JSON.parse(content);
+                
+                const defaultName = 'workflow.json';
+                const fileName = prompt('Podaj nazwę pliku:', defaultName);
+                
+                if (fileName === null) {
+                    return;
+                }
+                
+                const sanitizedFileName = fileName.trim() || defaultName;
+                const finalFileName = sanitizedFileName.endsWith('.json') 
+                    ? sanitizedFileName 
+                    : sanitizedFileName + '.json';
+                
+                const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+                a.download = finalFileName;
+            a.click();
+            URL.revokeObjectURL(url);
+                showMessage('Pobrano plik: ' + finalFileName);
+            } catch (e) {
+                showMessage('Błąd: niepoprawny JSON', true);
+            }
+        }
+
+        function validateContent() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            try {
+                JSON.parse(content);
+                showMessage('JSON jest poprawny');
+                jsonInput.classList.remove('error');
+            } catch (e) {
+                showMessage('Błąd JSON: ' + e.message, true);
+                jsonInput.classList.add('error');
+            }
+            updateStatus();
+        }
+
+        function minifyJSON() {
+            const content = jsonInput.value.trim();
+            if (!content) {
+                showMessage('Pole jest puste', true);
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(content);
+                const minified = JSON.stringify(parsed);
+                jsonOutput.value = minified;
+                jsonInput.value = minified;
+                showMessage('JSON zminifikowany');
+                updateStatus();
+                saveToLocalStorage();
+            } catch (e) {
+                showMessage('Błąd: ' + e.message, true);
+            }
+        }
+
+        function clearInput() {
+            jsonInput.value = '';
+            jsonOutput.value = '';
+                jsonInput.classList.remove('error');
+            originalJSON = '';
+            fixedJSON = '';
+            diffView.classList.remove('show');
+            diffView.innerHTML = '';
+            diffBtn.classList.remove('active');
+            diffBtn.textContent = 'Pokaż zmiany';
+            hideFeedback();
+            hideStatusBar();
+            updateStatus();
+            updateStats();
+            localStorage.removeItem('jsonEditor_data');
         }
 
         function updateStats() {
             const content = jsonInput.value.trim();
             if (!content) {
-                stats.style.display = 'none';
+                stats.classList.remove('show');
                 updateN8NInfo(null);
                 return;
             }
 
-            // Sprawdź typ zawartości - statystyki tylko dla JSON
             const detection = detectContentType(content);
             
             if (detection.type !== 'json') {
-                // Dla JavaScript lub nieznanego typu - ukryj statystyki
-                stats.style.display = 'none';
+                stats.classList.remove('show');
                 updateN8NInfo(null);
                 return;
             }
 
-            // Tylko dla JSON - wyświetl statystyki
             try {
                 const parsed = JSON.parse(content);
                 const size = new Blob([content]).size;
@@ -628,13 +1402,11 @@
                 document.getElementById('statSize').textContent = formatBytes(size);
                 document.getElementById('statKeys').textContent = keys;
                 document.getElementById('statDepth').textContent = depth;
-                stats.style.display = 'flex';
+                stats.classList.add('show');
                 
-                // Aktualizuj informacje n8n jeśli to workflow
                 updateN8NInfo(parsed);
             } catch (e) {
-                // Jeśli nie można sparsować jako JSON, ukryj statystyki
-                stats.style.display = 'none';
+                stats.classList.remove('show');
                 updateN8NInfo(null);
             }
         }
@@ -661,200 +1433,11 @@
         }
 
         function isN8NWorkflow(obj) {
-            // Podstawowa walidacja struktury n8n workflow
             return obj && (
                 (obj.nodes && Array.isArray(obj.nodes)) ||
                 (obj.connections && typeof obj.connections === 'object') ||
                 obj.name !== undefined
             );
-        }
-
-        function validateN8N() {
-            const jsonText = jsonInput.value.trim();
-            
-            if (!jsonText) {
-                showMessage('Pole JSON jest puste', true);
-                jsonInput.classList.add('error');
-                return false;
-            }
-
-            let parsed;
-            try {
-                parsed = JSON.parse(jsonText);
-            } catch (e) {
-                showMessage('Błąd JSON: ' + e.message, true);
-                jsonInput.classList.add('error');
-                return false;
-            }
-
-            // Walidacja struktury n8n
-            const errors = [];
-            const warnings = [];
-
-            if (!isN8NWorkflow(parsed)) {
-                errors.push('To nie wygląda na workflow n8n');
-            }
-
-            if (!parsed.nodes || !Array.isArray(parsed.nodes)) {
-                errors.push('Brak lub nieprawidłowa tablica "nodes"');
-            } else {
-                if (parsed.nodes.length === 0) {
-                    warnings.push('Workflow nie ma żadnych węzłów');
-                }
-                
-                // Sprawdź podstawowe właściwości węzłów
-                parsed.nodes.forEach((node, index) => {
-                    if (!node.name) {
-                        warnings.push(`Węzeł ${index + 1} nie ma nazwy`);
-                    }
-                    if (!node.type) {
-                        errors.push(`Węzeł ${index + 1} nie ma typu`);
-                    }
-                });
-            }
-
-            if (!parsed.name) {
-                warnings.push('Workflow nie ma nazwy');
-            }
-
-            if (errors.length > 0) {
-                showMessage('❌ Błędy n8n: ' + errors.join(', '), true);
-                jsonInput.classList.add('error');
-                return false;
-            }
-
-            if (warnings.length > 0) {
-                showMessage('⚠️ Ostrzeżenia: ' + warnings.join(', ') + ' | ✓ Struktura workflow jest poprawna');
-            } else {
-                showMessage('✓ Workflow n8n jest poprawny!');
-            }
-            
-            jsonInput.classList.remove('error');
-            updateN8NInfo(parsed);
-            return true;
-        }
-
-        function loadTemplate() {
-            const templateSelect = document.getElementById('templateSelect');
-            const template = templateSelect.value;
-            
-            if (!template) return;
-
-            let workflow = {};
-
-            switch(template) {
-                case 'empty':
-                    workflow = {
-                        name: 'Nowy Workflow',
-                        nodes: [],
-                        connections: {},
-                        active: false,
-                        settings: {},
-                        staticData: null,
-                        tags: []
-                    };
-                    break;
-
-                case 'webhook':
-                    workflow = {
-                        name: 'Webhook → HTTP Request',
-                        nodes: [
-                            {
-                                parameters: {},
-                                id: 'webhook-node',
-                                name: 'Webhook',
-                                type: 'n8n-nodes-base.webhook',
-                                typeVersion: 1,
-                                position: [250, 300]
-                            },
-                            {
-                                parameters: {
-                                    url: 'https://example.com/api',
-                                    method: 'GET'
-                                },
-                                id: 'http-node',
-                                name: 'HTTP Request',
-                                type: 'n8n-nodes-base.httpRequest',
-                                typeVersion: 1,
-                                position: [450, 300]
-                            }
-                        ],
-                        connections: {
-                            'Webhook': {
-                                main: [[{ node: 'HTTP Request', type: 'main', index: 0 }]]
-                            }
-                        },
-                        active: false,
-                        settings: {},
-                        staticData: null,
-                        tags: []
-                    };
-                    break;
-
-                case 'schedule':
-                    workflow = {
-                        name: 'Schedule → Task',
-                        nodes: [
-                            {
-                                parameters: {
-                                    rule: {
-                                        interval: [{ field: 'hours', hoursInterval: 1 }]
-                                    }
-                                },
-                                id: 'schedule-node',
-                                name: 'Schedule',
-                                type: 'n8n-nodes-base.scheduleTrigger',
-                                typeVersion: 1,
-                                position: [250, 300]
-                            },
-                            {
-                                parameters: {},
-                                id: 'task-node',
-                                name: 'Task',
-                                type: 'n8n-nodes-base.noOp',
-                                typeVersion: 1,
-                                position: [450, 300]
-                            }
-                        ],
-                        connections: {
-                            'Schedule': {
-                                main: [[{ node: 'Task', type: 'main', index: 0 }]]
-                            }
-                        },
-                        active: false,
-                        settings: {},
-                        staticData: null,
-                        tags: []
-                    };
-                    break;
-
-                case 'manual':
-                    workflow = {
-                        name: 'Manual Trigger',
-                        nodes: [
-                            {
-                                parameters: {},
-                                id: 'manual-node',
-                                name: 'Manual Trigger',
-                                type: 'n8n-nodes-base.manualTrigger',
-                                typeVersion: 1,
-                                position: [250, 300]
-                            }
-                        ],
-                        connections: {},
-                        active: false,
-                        settings: {},
-                        staticData: null,
-                        tags: []
-                    };
-                    break;
-            }
-
-            jsonInput.value = JSON.stringify(workflow, null, 2);
-            updateStats();
-            saveToLocalStorage();
-            templateSelect.value = '';
-            showMessage('✓ Szablon załadowany!');
         }
 
         function countKeys(obj, count = 0) {
@@ -886,1430 +1469,7 @@
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
-        function saveToLocalStorage() {
-            if (autoSaveCheckbox.checked) {
-                localStorage.setItem('jsonEditor_data', jsonInput.value);
-            }
-        }
-
-        // Centralny system wykrywania typu zawartości
-        function detectContentType(text) {
-            if (!text || !text.trim()) {
-                return { type: 'unknown', confidence: 0 };
-            }
-
-            const trimmed = text.trim();
-            
-            // PRIORYTET 1: Najpierw spróbuj sparsować jako JSON
-            // Jeśli JSON.parse() się powiedzie, to ZAWSZE jest JSON (nawet jeśli zawiera wzorce JS w stringach)
-            try {
-                JSON.parse(trimmed);
-                // Jeśli parsowanie się powiodło, to jest JSON - nie sprawdzaj wzorców JS
-                // bo mogą być w stringach (np. "items.length" w n8n workflow)
-                return { type: 'json', confidence: 1.0 };
-            } catch (e) {
-                // Nie jest poprawnym JSON - sprawdź czy to JavaScript
-            }
-
-            // PRIORYTET 2: Wykryj kod JavaScript (tylko jeśli nie jest poprawnym JSON)
-            const jsPatterns = [
-                /^\s*(var|let|const|function|if|for|while|return|class|export|import)\s+/m,
-                /;\s*$/m,
-                /=>\s*{?/m,
-                /\$node\[/m,
-                /items\.length/m,
-                /continue\s*;/m,
-                /break\s*;/m,
-                /\.indexOf\(/m,
-                /\.push\(/m,
-                /\.map\(/m,
-                /\.filter\(/m
-            ];
-            
-            // Jeśli nie zaczyna się od { lub [, prawdopodobnie JS
-            if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
-                const jsMatches = jsPatterns.filter(pattern => pattern.test(trimmed)).length;
-                // Jeśli znajdzie wzorce JS, to JS
-                if (jsMatches >= 1) {
-                    return { type: 'js', confidence: 0.9 };
-                }
-                // Jeśli nie ma wzorców i nie zaczyna się od { lub [, to może być JS lub tekst
-                return { type: 'unknown', confidence: 0.4 };
-            }
-            
-            // Jeśli zaczyna się od { lub [ ale nie parsuje się jako JSON, sprawdź wzorce JS
-            const jsMatches = jsPatterns.filter(pattern => pattern.test(trimmed)).length;
-            if (jsMatches >= 3) {
-                return { type: 'js', confidence: 0.8 };
-            }
-
-            // Nieznany typ
-            return { type: 'unknown', confidence: 0.5 };
-        }
-
-        function updateContentTypeIndicator() {
-            const text = jsonInput.value.trim();
-            const indicator = document.getElementById('contentTypeIndicator');
-            
-            if (!text) {
-                indicator.style.display = 'none';
-                return;
-            }
-
-            const detection = detectContentType(text);
-            indicator.style.display = 'inline-block';
-            indicator.className = 'content-type-indicator ' + detection.type;
-            
-            const labels = {
-                'json': 'JSON',
-                'js': 'JavaScript',
-                'unknown': 'Nieznany'
-            };
-            
-            indicator.textContent = labels[detection.type] || 'Nieznany';
-        }
-
-        function formatJavaScript(code) {
-            // Zachowaj oryginalne wcięcia - tylko normalizuj białe znaki i usuń zbędne puste linie
-            const lines = code.split('\n');
-            const formatted = [];
-            let lastNonEmpty = -1;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const trimmed = line.trim();
-                
-                // Pomiń nadmiarowe puste linie (max 2 z rzędu)
-                if (!trimmed) {
-                    if (lastNonEmpty >= 0 && i - lastNonEmpty <= 2) {
-                        formatted.push('');
-                    }
-                    continue;
-                }
-                
-                formatted.push(line); // Zachowaj oryginalne wcięcia
-                lastNonEmpty = i;
-            }
-            
-            // Usuń puste linie na końcu
-            while (formatted.length > 0 && !formatted[formatted.length - 1].trim()) {
-                formatted.pop();
-            }
-            
-            return formatted.join('\n');
-        }
-
-        function formatOrFix() {
-            const content = jsonInput.value.trim();
-            
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                return;
-            }
-
-            // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
-            try {
-                JSON.parse(content);
-                // Jeśli parsuje się jako JSON, użyj fixJSON
-                fixJSON(content);
-                return;
-            } catch (jsonError) {
-                // Nie jest poprawnym JSON - sprawdź typ
-                const detection = detectContentType(content);
-                
-                // Obsługa JavaScript
-                if (detection.type === 'js') {
-                    try {
-                        const formatted = formatJavaScript(content);
-                        jsonInput.value = formatted;
-                        updateContentTypeIndicator();
-                        saveToLocalStorage();
-                        showMessage('✓ Kod JavaScript został sformatowany!');
-                        jsonInput.classList.remove('error');
-                    } catch (e) {
-                        showMessage('⚠️ Nie udało się sformatować kodu JavaScript: ' + e.message, true);
-                    }
-                    return;
-                }
-
-                // Nieznany typ - spróbuj naprawić jako JSON
-                showMessage('⚠️ Nie rozpoznano typu zawartości. Próbuję naprawić jako JSON...', false);
-                fixJSON(content);
-            }
-        }
-
-        function fixJSON(jsonText) {
-            const fixes = [];
-            let fixed = jsonText;
-            const originalLength = fixed.length;
-
-            // NAJPIERW: Sprawdź czy JSON jest już poprawny - jeśli tak, tylko sformatuj
-            try {
-                const alreadyParsed = JSON.parse(fixed);
-                // JSON jest poprawny! Tylko sformatuj
-                fixed = formatCheckbox.checked 
-                    ? JSON.stringify(alreadyParsed, null, 2)
-                    : JSON.stringify(alreadyParsed);
-                
-                jsonInput.value = fixed;
-                jsonInput.classList.remove('error');
-                updateContentTypeIndicator();
-                updateStats();
-                saveToLocalStorage();
-                
-                showMessage('✓ JSON był już poprawny - sformatowano');
-                return; // Sukces - nie trzeba naprawiać
-            } catch (e) {
-                // JSON ma błędy - kontynuuj naprawę
-            }
-
-            // 1. Usuń BOM (Byte Order Mark)
-            if (fixed.length > 0 && fixed.charCodeAt(0) === 0xFEFF) {
-                fixed = fixed.slice(1);
-                fixes.push('Usunięto BOM');
-            }
-
-            // 2. Usuń komentarze jednoliniowe (//) - TYLKO poza stringami
-            const beforeComments = fixed;
-            let inString = false;
-            let escapeNext = false;
-            let stringChar = '';
-            let result = '';
-            
-            for (let i = 0; i < fixed.length; i++) {
-                const char = fixed[i];
-                
-                if (escapeNext) {
-                    result += char;
-                    escapeNext = false;
-                    continue;
-                }
-                
-                if (char === '\\') {
-                    result += char;
-                    escapeNext = true;
-                    continue;
-                }
-                
-                if ((char === '"' || char === "'") && !inString) {
-                    inString = true;
-                    stringChar = char;
-                    result += char;
-                    continue;
-                }
-                
-                if (char === stringChar && inString) {
-                    inString = false;
-                    stringChar = '';
-                    result += char;
-                    continue;
-                }
-                
-                if (inString) {
-                    // W stringu - kopiuj wszystko
-                    result += char;
-                    continue;
-                }
-                
-                // Poza stringiem - sprawdź komentarze
-                if (char === '/' && i + 1 < fixed.length) {
-                    if (fixed[i + 1] === '/') {
-                        // Komentarz jednoliniowy - usuń do końca linii
-                        while (i < fixed.length && fixed[i] !== '\n') {
-                            i++;
-                        }
-                        if (i < fixed.length) {
-                            result += '\n';
-                        }
-                        continue;
-                    }
-                    if (fixed[i + 1] === '*') {
-                        // Komentarz wieloliniowy - usuń do */
-                        i += 2;
-                        while (i + 1 < fixed.length) {
-                            if (fixed[i] === '*' && fixed[i + 1] === '/') {
-                                i += 2;
-                                break;
-                            }
-                            i++;
-                        }
-                        continue;
-                    }
-                }
-                
-                result += char;
-            }
-            
-            if (result !== beforeComments) {
-                fixes.push('Usunięto komentarze');
-            }
-            fixed = result;
-
-            // 3. Zamień pojedyncze cudzysłowy na podwójne TYLKO w kluczach (poza stringami)
-            // Używamy prostszego podejścia - tylko dla kluczy przed dwukropkiem
-            const beforeQuotes = fixed;
-            fixed = fixed.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
-            if (fixed !== beforeQuotes) {
-                fixes.push('Zamieniono cudzysłowy w kluczach');
-            }
-
-            // 4. Napraw brakujące cudzysłowy w kluczach (tylko identyfikatory, poza stringami)
-            const beforeKeys = fixed;
-            // Bardzo ostrożny regex - tylko identyfikatory przed dwukropkiem, poza stringami
-            fixed = fixed.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
-            if (fixed !== beforeKeys) {
-                fixes.push('Dodano cudzysłowy w kluczach');
-            }
-
-            // 5. Usuń przecinki na końcu (trailing commas) - TYLKO poza stringami
-            const beforeTrailing = fixed;
-            inString = false;
-            escapeNext = false;
-            stringChar = '';
-            result = '';
-            
-            for (let i = 0; i < fixed.length; i++) {
-                const char = fixed[i];
-                
-                if (escapeNext) {
-                    result += char;
-                    escapeNext = false;
-                    continue;
-                }
-                
-                if (char === '\\') {
-                    result += char;
-                    escapeNext = true;
-                    continue;
-                }
-                
-                if ((char === '"' || char === "'") && !inString) {
-                    inString = true;
-                    stringChar = char;
-                    result += char;
-                    continue;
-                }
-                
-                if (char === stringChar && inString) {
-                    inString = false;
-                    stringChar = '';
-                    result += char;
-                    continue;
-                }
-                
-                if (inString) {
-                    result += char;
-                    continue;
-                }
-                
-                // Poza stringiem - usuń trailing commas
-                if (char === ',' && i + 1 < fixed.length) {
-                    let j = i + 1;
-                    // Pomiń białe znaki
-                    while (j < fixed.length && /\s/.test(fixed[j])) {
-                        j++;
-                    }
-                    if (j < fixed.length && (fixed[j] === '}' || fixed[j] === ']')) {
-                        // Trailing comma - pomiń
-                        i = j - 1;
-                        continue;
-                    }
-                }
-                
-                result += char;
-            }
-            
-            if (result !== beforeTrailing) {
-                fixes.push('Usunięto przecinki na końcu');
-            }
-            fixed = result;
-
-            // 6. Zamień niepoprawne wartości JavaScript na JSON (TYLKO poza stringami)
-            const beforeUndefined = fixed;
-            inString = false;
-            escapeNext = false;
-            stringChar = '';
-            result = '';
-            
-            for (let i = 0; i < fixed.length; i++) {
-                const char = fixed[i];
-                
-                if (escapeNext) {
-                    result += char;
-                    escapeNext = false;
-                    continue;
-                }
-                
-                if (char === '\\') {
-                    result += char;
-                    escapeNext = true;
-                    continue;
-                }
-                
-                if ((char === '"' || char === "'") && !inString) {
-                    inString = true;
-                    stringChar = char;
-                    result += char;
-                    continue;
-                }
-                
-                if (char === stringChar && inString) {
-                    inString = false;
-                    stringChar = '';
-                    result += char;
-                    continue;
-                }
-                
-                if (inString) {
-                    result += char;
-                    continue;
-                }
-                
-                // Poza stringiem - zamień undefined/NaN/Infinity
-                if (char === 'u' && fixed.substring(i, i + 9) === 'undefined') {
-                    // Sprawdź kontekst - czy to wartość (po dwukropku)
-                    let checkBack = i - 1;
-                    while (checkBack >= 0 && /\s/.test(fixed[checkBack])) {
-                        checkBack--;
-                    }
-                    if (checkBack >= 0 && fixed[checkBack] === ':') {
-                        result += 'null';
-                        i += 8; // 'undefined'.length - 1
-                        continue;
-                    }
-                }
-                
-                if (char === 'N' && fixed.substring(i, i + 3) === 'NaN') {
-                    let checkBack = i - 1;
-                    while (checkBack >= 0 && /\s/.test(fixed[checkBack])) {
-                        checkBack--;
-                    }
-                    if (checkBack >= 0 && fixed[checkBack] === ':') {
-                        result += 'null';
-                        i += 2;
-                        continue;
-                    }
-                }
-                
-                if (char === 'I' && fixed.substring(i, i + 8) === 'Infinity') {
-                    let checkBack = i - 1;
-                    while (checkBack >= 0 && /\s/.test(fixed[checkBack])) {
-                        checkBack--;
-                    }
-                    if (checkBack >= 0 && fixed[checkBack] === ':') {
-                        result += 'null';
-                        i += 7;
-                        continue;
-                    }
-                }
-                
-                result += char;
-            }
-            
-            if (result !== beforeUndefined) {
-                fixes.push('Zamieniono niepoprawne wartości na null');
-            }
-            fixed = result;
-
-            // 7. Napraw podwójne przecinki (TYLKO poza stringami)
-            const beforeDoubleCommas = fixed;
-            inString = false;
-            escapeNext = false;
-            stringChar = '';
-            result = '';
-            
-            for (let i = 0; i < fixed.length; i++) {
-                const char = fixed[i];
-                
-                if (escapeNext) {
-                    result += char;
-                    escapeNext = false;
-                    continue;
-                }
-                
-                if (char === '\\') {
-                    result += char;
-                    escapeNext = true;
-                    continue;
-                }
-                
-                if ((char === '"' || char === "'") && !inString) {
-                    inString = true;
-                    stringChar = char;
-                    result += char;
-                    continue;
-                }
-                
-                if (char === stringChar && inString) {
-                    inString = false;
-                    stringChar = '';
-                    result += char;
-                    continue;
-                }
-                
-                if (inString) {
-                    result += char;
-                    continue;
-                }
-                
-                // Poza stringiem - usuń podwójne przecinki
-                if (char === ',' && i + 1 < fixed.length) {
-                    let j = i + 1;
-                    while (j < fixed.length && /\s/.test(fixed[j])) {
-                        j++;
-                    }
-                    if (j < fixed.length && fixed[j] === ',') {
-                        // Podwójny przecinek - pomiń pierwszy
-                        continue;
-                    }
-                }
-                
-                result += char;
-            }
-            
-            if (result !== beforeDoubleCommas) {
-                fixes.push('Usunięto podwójne przecinki');
-            }
-            fixed = result;
-
-            // 8. Usuń zbędne białe znaki na początku/końcu
-            fixed = fixed.trim();
-
-            // 9. Sprawdź czy nie zepsuło się zbyt dużo (zabezpieczenie)
-            if (Math.abs(fixed.length - originalLength) > originalLength * 0.5) {
-                throw new Error('Naprawa spowodowała zbyt duże zmiany - możliwe uszkodzenie danych');
-            }
-
-            // Spróbuj sparsować naprawiony JSON
-            let parsed;
-            try {
-                parsed = JSON.parse(fixed);
-                
-                // Formatuj jeśli checkbox jest zaznaczony
-                if (formatCheckbox.checked) {
-                    fixed = JSON.stringify(parsed, null, 2);
-                } else {
-                    fixed = JSON.stringify(parsed);
-                }
-
-                jsonInput.value = fixed;
-                jsonInput.classList.remove('error');
-                updateContentTypeIndicator();
-                updateStats();
-                saveToLocalStorage();
-
-                if (fixes.length > 0) {
-                    showMessage('✓ Naprawiono: ' + fixes.join(', '));
-                } else {
-                    showMessage('✓ JSON był już poprawny - sformatowano');
-                }
-                return; // Sukces!
-            } catch (e) {
-                // Jeśli nadal nie działa, spróbuj bardziej agresywnych napraw (ale bezpiecznie - tylko poza stringami)
-                try {
-                    let aggressiveFixed = fixed;
-                    
-                    // KROK 1: Usuń trailing commas i napraw undefined (już zrobione wcześniej, ale powtórzmy)
-                    let inString = false;
-                    let escapeNext = false;
-                    let stringChar = '';
-                    let result = '';
-                    
-                    for (let i = 0; i < aggressiveFixed.length; i++) {
-                        const char = aggressiveFixed[i];
-                        
-                        if (escapeNext) {
-                            result += char;
-                            escapeNext = false;
-                            continue;
-                        }
-                        
-                        if (char === '\\') {
-                            result += char;
-                            escapeNext = true;
-                            continue;
-                        }
-                        
-                        if ((char === '"' || char === "'") && !inString) {
-                            inString = true;
-                            stringChar = char;
-                            result += char;
-                            continue;
-                        }
-                        
-                        if (char === stringChar && inString) {
-                            inString = false;
-                            stringChar = '';
-                            result += char;
-                            continue;
-                        }
-                        
-                        if (inString) {
-                            result += char;
-                            continue;
-                        }
-                        
-                        // Poza stringiem - agresywne naprawy
-                        // Trailing commas
-                        if (char === ',' && i + 1 < aggressiveFixed.length) {
-                            let j = i + 1;
-                            while (j < aggressiveFixed.length && /\s/.test(aggressiveFixed[j])) {
-                                j++;
-                            }
-                            if (j < aggressiveFixed.length && (aggressiveFixed[j] === '}' || aggressiveFixed[j] === ']')) {
-                                continue; // Pomiń trailing comma
-                            }
-                        }
-                        
-                        // undefined/NaN/Infinity
-                        if (char === 'u' && aggressiveFixed.substring(i, i + 9) === 'undefined') {
-                            let checkBack = i - 1;
-                            while (checkBack >= 0 && /\s/.test(aggressiveFixed[checkBack])) {
-                                checkBack--;
-                            }
-                            if (checkBack >= 0 && aggressiveFixed[checkBack] === ':') {
-                                result += 'null';
-                                i += 8;
-                                continue;
-                            }
-                        }
-                        
-                        if (char === 'N' && aggressiveFixed.substring(i, i + 3) === 'NaN') {
-                            let checkBack = i - 1;
-                            while (checkBack >= 0 && /\s/.test(aggressiveFixed[checkBack])) {
-                                checkBack--;
-                            }
-                            if (checkBack >= 0 && aggressiveFixed[checkBack] === ':') {
-                                result += 'null';
-                                i += 2;
-                                continue;
-                            }
-                        }
-                        
-                        if (char === 'I' && aggressiveFixed.substring(i, i + 8) === 'Infinity') {
-                            let checkBack = i - 1;
-                            while (checkBack >= 0 && /\s/.test(aggressiveFixed[checkBack])) {
-                                checkBack--;
-                            }
-                            if (checkBack >= 0 && aggressiveFixed[checkBack] === ':') {
-                                result += 'null';
-                                i += 7;
-                                continue;
-                            }
-                        }
-                        
-                        result += char;
-                    }
-                    
-                    aggressiveFixed = result;
-                    
-                    // KROK 2: Napraw brakujące przecinki - parsuj znak po znaku (najbezpieczniejsze)
-                    const beforeCommas = aggressiveFixed;
-                    inString = false;
-                    escapeNext = false;
-                    stringChar = '';
-                    result = '';
-                    let lastValueEnd = -1; // Pozycja końca ostatniej wartości
-                    let expectingComma = false; // Czy oczekujemy przecinka
-                    
-                    for (let i = 0; i < aggressiveFixed.length; i++) {
-                        const char = aggressiveFixed[i];
-                        
-                        if (escapeNext) {
-                            result += char;
-                            escapeNext = false;
-                            continue;
-                        }
-                        
-                        if (char === '\\') {
-                            result += char;
-                            escapeNext = true;
-                            continue;
-                        }
-                        
-                        if ((char === '"' || char === "'") && !inString) {
-                            // Sprawdź czy przed tym cudzysłowem była wartość bez przecinka
-                            // ALE TYLKO jeśli jesteśmy na poziomie właściwości obiektu (nie w zagnieżdżeniu)
-                            if (expectingComma && lastValueEnd >= 0) {
-                                // Sprawdź czy między ostatnią wartością a tym cudzysłowem są tylko białe znaki
-                                let between = aggressiveFixed.substring(lastValueEnd + 1, i);
-                                if (/^\s*$/.test(between)) {
-                                    // Sprawdź czy to nowa właściwość (cudzysłów, potem dwukropek)
-                                    // WAŻNE: Sprawdź czy nie jesteśmy w zagnieżdżonym obiekcie/tablicy
-                                    let depth = 0;
-                                    for (let k = 0; k < i; k++) {
-                                        if (aggressiveFixed[k] === '{' || aggressiveFixed[k] === '[') depth++;
-                                        if (aggressiveFixed[k] === '}' || aggressiveFixed[k] === ']') depth--;
-                                    }
-                                    
-                                    // Tylko jeśli jesteśmy na poziomie głównym lub w obiekcie (depth >= 0)
-                                    if (depth >= 0) {
-                                        let checkForward = i + 1;
-                                        while (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] !== '"' && aggressiveFixed[checkForward] !== ':') {
-                                            checkForward++;
-                                        }
-                                        if (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] === ':') {
-                                            // To nowa właściwość! Dodaj przecinek przed białymi znakami
-                                            result += ',';
-                                            if (!fixes.includes('Dodano brakujący przecinek')) {
-                                                fixes.push('Dodano brakujący przecinek');
-                                            }
-                                            expectingComma = false;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            inString = true;
-                            stringChar = char;
-                            result += char;
-                            continue;
-                        }
-                        
-                        if (char === stringChar && inString) {
-                            inString = false;
-                            stringChar = '';
-                            result += char;
-                            lastValueEnd = i;
-                            expectingComma = true; // Po stringu oczekujemy przecinka lub zamknięcia
-                            continue;
-                        }
-                        
-                        if (inString) {
-                            result += char;
-                            continue;
-                        }
-                        
-                        // Poza stringiem
-                        if (char === '{' || char === '[') {
-                            result += char;
-                            expectingComma = false;
-                            lastValueEnd = -1;
-                            continue;
-                        }
-                        
-                        if (char === '}' || char === ']') {
-                            result += char;
-                            // Po zamknięciu obiektu/tablicy nie oczekujemy przecinka (może być ostatnia właściwość)
-                            expectingComma = false;
-                            lastValueEnd = -1;
-                            continue;
-                        }
-                        
-                        if (char === ':') {
-                            result += char;
-                            expectingComma = false;
-                            lastValueEnd = -1;
-                            continue;
-                        }
-                        
-                        if (char === ',') {
-                            result += char;
-                            expectingComma = false;
-                            lastValueEnd = -1;
-                            continue;
-                        }
-                        
-                        // Jeśli oczekujemy przecinka i napotkaliśmy coś innego niż białe znaki
-                        if (expectingComma && !/\s/.test(char) && char !== '}' && char !== ']') {
-                            // Sprawdź czy to nowa właściwość (cudzysłów, potem dwukropek)
-                            if (char === '"') {
-                                let checkForward = i + 1;
-                                while (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] !== '"' && aggressiveFixed[checkForward] !== ':') {
-                                    checkForward++;
-                                }
-                                if (checkForward < aggressiveFixed.length && aggressiveFixed[checkForward] === ':') {
-                                    // To nowa właściwość! Dodaj przecinek przed białymi znakami
-                                    // Znajdź początek białych znaków przed tym cudzysłowem
-                                    let whitespaceStart = i - 1;
-                                    while (whitespaceStart >= 0 && /\s/.test(aggressiveFixed[whitespaceStart])) {
-                                        whitespaceStart--;
-                                    }
-                                    // Dodaj przecinek
-                                    result += ',';
-                                    if (!fixes.includes('Dodano brakujący przecinek')) {
-                                        fixes.push('Dodano brakujący przecinek');
-                                    }
-                                    expectingComma = false;
-                                }
-                            }
-                        }
-                        
-                        // Sprawdź czy to true/false/null
-                        if (char === 't' && aggressiveFixed.substring(i, i + 4) === 'true') {
-                            result += 'true';
-                            i += 3;
-                            lastValueEnd = i;
-                            expectingComma = true;
-                            continue;
-                        }
-                        
-                        if (char === 'f' && aggressiveFixed.substring(i, i + 5) === 'false') {
-                            result += 'false';
-                            i += 4;
-                            lastValueEnd = i;
-                            expectingComma = true;
-                            continue;
-                        }
-                        
-                        if (char === 'n' && aggressiveFixed.substring(i, i + 4) === 'null') {
-                            result += 'null';
-                            i += 3;
-                            lastValueEnd = i;
-                            expectingComma = true;
-                            continue;
-                        }
-                        
-                        // Sprawdź czy to liczba
-                        if (/\d/.test(char) || char === '-' || char === '.') {
-                            let numEnd = i;
-                            let numStr = '';
-                            while (numEnd < aggressiveFixed.length) {
-                                const testChar = aggressiveFixed[numEnd];
-                                if (testChar === ',' || testChar === '}' || testChar === ']' || 
-                                    (/\s/.test(testChar) && numStr.length > 0) ||
-                                    testChar === ':' || testChar === '"') {
-                                    break;
-                                }
-                                numStr += testChar;
-                                numEnd++;
-                            }
-                            
-                            // Sprawdź czy to poprawna liczba
-                            if (/^-?\d+\.?\d*$/.test(numStr.trim())) {
-                                result += numStr;
-                                i = numEnd - 1;
-                                lastValueEnd = i;
-                                expectingComma = true;
-                                continue;
-                            }
-                        }
-                        
-                        result += char;
-                    }
-                    
-                    aggressiveFixed = result;
-                    
-                    // Spróbuj sparsować ponownie
-                    if (aggressiveFixed.trim().startsWith('{') || aggressiveFixed.trim().startsWith('[')) {
-                        parsed = JSON.parse(aggressiveFixed);
-                        fixed = formatCheckbox.checked 
-                            ? JSON.stringify(parsed, null, 2)
-                            : JSON.stringify(parsed);
-                        
-                        jsonInput.value = fixed;
-                        jsonInput.classList.remove('error');
-                        updateContentTypeIndicator();
-                        updateStats();
-                        saveToLocalStorage();
-                        showMessage('✓ Naprawiono z użyciem zaawansowanych metod');
-                        return; // Sukces po agresywnych naprawach
-                    } else {
-                        throw new Error('Struktura nie wygląda na JSON');
-                    }
-                } catch (e2) {
-                    // Ostatnia próba - pokaż szczegółowy błąd z lokalizacją
-                    const errorMsg = e2.message;
-                    let detailedMsg = '❌ Nie udało się automatycznie naprawić JSON.\n\n';
-                    detailedMsg += 'Błąd: ' + errorMsg + '\n\n';
-                    
-                    // Spróbuj wyciągnąć numer linii z błędu
-                    const lineMatch = errorMsg.match(/line (\d+)/i);
-                    const posMatch = errorMsg.match(/position (\d+)/i);
-                    
-                    if (lineMatch) {
-                        const lineNum = parseInt(lineMatch[1]);
-                        const lines = fixed.split('\n');
-                        if (lines[lineNum - 1]) {
-                            detailedMsg += `Linia ${lineNum}: ${lines[lineNum - 1].trim()}\n\n`;
-                        }
-                    } else if (posMatch) {
-                        const pos = parseInt(posMatch[1]);
-                        const before = fixed.substring(0, Math.min(pos, fixed.length));
-                        const after = fixed.substring(pos, Math.min(pos + 50, fixed.length));
-                        const lineNum = before.split('\n').length;
-                        detailedMsg += `Pozycja ${pos} (linia ~${lineNum}):\n`;
-                        detailedMsg += `...${before.slice(-30)}[BŁĄD]${after.slice(0, 30)}...\n\n`;
-                    }
-                    
-                    detailedMsg += '💡 Wskazówki do ręcznej naprawy:\n';
-                    detailedMsg += '• Sprawdź czy wszystkie przecinki są na miejscu (szczególnie między właściwościami)\n';
-                    detailedMsg += '• Sprawdź czy wszystkie cudzysłowy są zamknięte\n';
-                    detailedMsg += '• Sprawdź czy nie ma komentarzy w JSON (// lub /* */)\n';
-                    detailedMsg += '• Sprawdź czy nie ma undefined, NaN, Infinity\n';
-                    detailedMsg += '• Sprawdź czy w stringach nie ma niepoprawnych escape\'ów\n';
-                    detailedMsg += '• Użyj "Waliduj JSON" aby zobaczyć dokładny błąd\n';
-                    detailedMsg += '\n💡 Częsty błąd: Brak przecinka między właściwościami\n';
-                    detailedMsg += '   Przykład błędny: "key1": "value1" "key2": "value2"\n';
-                    detailedMsg += '   Przykład poprawny: "key1": "value1", "key2": "value2"';
-                    
-                    alert(detailedMsg);
-                    showMessage('❌ Nie udało się automatycznie naprawić JSON. Sprawdź szczegóły w oknie dialogowym.', true);
-                    jsonInput.classList.add('error');
-                }
-            }
-        }
-
-        function validateContent() {
-            const content = jsonInput.value.trim();
-            
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                jsonInput.classList.add('error');
-                updateContentTypeIndicator();
-                return false;
-            }
-
-            // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
-            try {
-                const parsed = JSON.parse(content);
-                updateContentTypeIndicator();
-                showMessage('✓ JSON jest poprawny!');
-                jsonInput.classList.remove('error');
-                updateStats();
-                return true;
-            } catch (jsonError) {
-                // Nie jest poprawnym JSON - sprawdź typ
-                const detection = detectContentType(content);
-                updateContentTypeIndicator();
-
-                if (detection.type === 'js') {
-                    // Podstawowa walidacja składni JS
-                    try {
-                        new Function(content);
-                        showMessage('✓ Kod JavaScript wygląda poprawnie!');
-                        jsonInput.classList.remove('error');
-                        return true;
-                    } catch (e) {
-                        showMessage('⚠️ Możliwe błędy w kodzie JavaScript: ' + e.message, true);
-                        jsonInput.classList.add('error');
-                        return false;
-                    }
-                }
-
-                // Jeśli nie JSON i nie JS, pokaż błąd JSON
-                showMessage('Błąd JSON: ' + jsonError.message, true);
-                jsonInput.classList.add('error');
-                updateStats();
-                return false;
-            }
-        }
-
-        function exportToN8N() {
-            const content = jsonInput.value.trim();
-            
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                jsonInput.classList.add('error');
-                return;
-            }
-
-            let parsedJSON;
-            try {
-                parsedJSON = JSON.parse(content);
-            } catch (e) {
-                showMessage('❌ To nie jest poprawny JSON. Użyj "🔧 Formatuj/Napraw" aby naprawić błędy.', true);
-                jsonInput.classList.add('error');
-                return;
-            }
-
-            // Walidacja czy to workflow n8n
-            const isN8N = isN8NWorkflow(parsedJSON);
-            if (!isN8N) {
-                const confirmExport = confirm('⚠️ To nie wygląda na workflow n8n. Czy na pewno chcesz eksportować jako JSON?');
-                if (!confirmExport) {
-                    return;
-                }
-            } else {
-                // Jeśli to workflow n8n, sprawdź podstawowe wymagania
-                const errors = [];
-                if (!parsedJSON.nodes || !Array.isArray(parsedJSON.nodes)) {
-                    errors.push('Brak tablicy "nodes"');
-                }
-                if (errors.length > 0) {
-                    const confirmExport = confirm('⚠️ Workflow n8n ma błędy: ' + errors.join(', ') + '. Czy na pewno chcesz eksportować?');
-                    if (!confirmExport) {
-                        return;
-                    }
-                }
-            }
-
-            // Przygotuj workflow do eksportu - zawsze formatuj (pretty print)
-            const formattedJSON = JSON.stringify(parsedJSON, null, 2);
-            
-            // Ustaw nazwę pliku na podstawie workflow
-            let filename = 'workflow';
-            if (parsedJSON.name) {
-                filename = parsedJSON.name.replace(/[^a-z0-9_-]/gi, '_');
-            } else if (filenameInput.value.trim()) {
-                filename = filenameInput.value.trim().replace(/[^a-z0-9_-]/gi, '_');
-            }
-
-            // Pobierz jako JSON
-            const blob = new Blob([formattedJSON], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename + '.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            showMessage('✓ Workflow n8n gotowy do importu! Zaimportuj w n8n: Menu → Import from File → wybierz pobrany plik.');
-            jsonInput.classList.remove('error');
-        }
-
-        function minifyJSON() {
-            const content = jsonInput.value.trim();
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                return;
-            }
-
-            try {
-                const parsed = JSON.parse(content);
-                const minified = JSON.stringify(parsed);
-                jsonInput.value = minified;
-                updateContentTypeIndicator();
-                updateStats();
-                saveToLocalStorage();
-                // Formatowanie nie zmienia struktury, więc nie resetujemy oryginału
-                showMessage('✓ JSON został zminifikowany (usunięto wszystkie białe znaki)!');
-                jsonInput.classList.remove('error');
-            } catch (e) {
-                showMessage('Błąd JSON: ' + e.message + '. Użyj "🔧 Formatuj/Napraw" aby naprawić.', true);
-                jsonInput.classList.add('error');
-            }
-        }
-
-        function beautifyJSON() {
-            const content = jsonInput.value.trim();
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                return;
-            }
-
-            try {
-                const parsed = JSON.parse(content);
-                const beautified = JSON.stringify(parsed, null, 2);
-                jsonInput.value = beautified;
-                updateContentTypeIndicator();
-                updateStats();
-                saveToLocalStorage();
-                // Formatowanie nie zmienia struktury, więc nie resetujemy oryginału
-                showMessage('✓ JSON został sformatowany (pretty print)!');
-                jsonInput.classList.remove('error');
-            } catch (e) {
-                showMessage('Błąd JSON: ' + e.message + '. Użyj "🔧 Formatuj/Napraw" aby naprawić.', true);
-                jsonInput.classList.add('error');
-            }
-        }
-
-        // Zmienna do przechowywania oryginalnego JSON przed pokazaniem struktury
-        let originalJSONBeforeStructure = null;
-
-        function showStructure() {
-            const content = jsonInput.value.trim();
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                return;
-            }
-
-            try {
-                const parsed = JSON.parse(content);
-                
-                // Zapisz oryginalny JSON jeśli jeszcze nie zapisany
-                if (originalJSONBeforeStructure === null) {
-                    originalJSONBeforeStructure = content;
-                }
-                
-                // Funkcja do tworzenia struktury (typy wartości, bez danych)
-                function getStructure(obj, depth = 0) {
-                    if (depth > 10) return '...'; // Zabezpieczenie przed zbyt głębokim zagnieżdżeniem
-                    
-                    if (obj === null) return 'null';
-                    if (Array.isArray(obj)) {
-                        if (obj.length === 0) return '[]';
-                        return '[' + getStructure(obj[0], depth + 1) + ', ...] (' + obj.length + ' items)';
-                    }
-                    if (typeof obj === 'object') {
-                        const keys = Object.keys(obj);
-                        if (keys.length === 0) return '{}';
-                        const structure = {};
-                        keys.forEach(key => {
-                            const value = obj[key];
-                            if (typeof value === 'object' && value !== null) {
-                                structure[key] = getStructure(value, depth + 1);
-                            } else {
-                                structure[key] = typeof value;
-                            }
-                        });
-                        return JSON.stringify(structure, null, 2);
-                    }
-                    return typeof obj;
-                }
-
-                const structure = getStructure(parsed);
-                jsonInput.value = structure;
-                updateContentTypeIndicator();
-                
-                // Pokaż przycisk "Przywróć oryginał"
-                document.getElementById('restoreBtn').style.display = 'inline-block';
-                
-                showMessage('✓ Wyświetlono strukturę JSON. Użyj "Przywróć oryginał" aby wrócić do pełnego JSON.');
-                jsonInput.classList.remove('error');
-            } catch (e) {
-                showMessage('Błąd JSON: ' + e.message, true);
-                jsonInput.classList.add('error');
-            }
-        }
-
-        function restoreOriginal() {
-            if (originalJSONBeforeStructure !== null) {
-                jsonInput.value = originalJSONBeforeStructure;
-                originalJSONBeforeStructure = null;
-                updateContentTypeIndicator();
-                updateStats();
-                saveToLocalStorage();
-                
-                // Ukryj przycisk "Przywróć oryginał"
-                document.getElementById('restoreBtn').style.display = 'none';
-                
-                showMessage('✓ Przywrócono oryginalny JSON!');
-                jsonInput.classList.remove('error');
-            } else {
-                showMessage('Brak zapisanego oryginału do przywrócenia', false);
-            }
-        }
-
-        function downloadJSON() {
-            const content = jsonInput.value.trim();
-            
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                jsonInput.classList.add('error');
-                return;
-            }
-
-            // Sprawdź czy tryb n8n jest włączony
-            const n8nExportMode = n8nExportModeCheckbox.checked;
-
-            // NAJWAŻNIEJSZE: Jeśli tryb n8n jest włączony, zawsze próbuj jako JSON
-            if (n8nExportMode) {
-                let parsedJSON = null;
-                try {
-                    parsedJSON = JSON.parse(content);
-                    
-                    // Jeśli parsuje się jako JSON, zawsze pobierz jako .json
-                    const formattedJSON = formatCheckbox.checked 
-                        ? JSON.stringify(parsedJSON, null, 2)
-                        : JSON.stringify(parsedJSON);
-                    
-                    let filename = filenameInput.value.trim();
-                    if (isN8NWorkflow(parsedJSON) && parsedJSON.name) {
-                        filename = parsedJSON.name.replace(/[^a-z0-9_-]/gi, '_');
-                    }
-                    if (!filename) filename = 'workflow';
-                    
-                    const blob = new Blob([formattedJSON], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename + '.json';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-
-                    showMessage('✓ Plik JSON został pobrany! Gotowy do importu w n8n.');
-                    jsonInput.classList.remove('error');
-                    return;
-                } catch (e) {
-                    // Jeśli nie parsuje się jako JSON w trybie n8n, pokaż błąd
-                    showMessage('❌ To nie jest poprawny JSON. Użyj "Formatuj/Napraw" aby naprawić błędy lub wyłącz "Tryb eksportu n8n".', true);
-                    jsonInput.classList.add('error');
-                    return;
-                }
-            }
-
-            // Jeśli tryb n8n jest wyłączony, użyj standardowej logiki
-            let parsedJSON = null;
-            let isValidJSON = false;
-            try {
-                parsedJSON = JSON.parse(content);
-                isValidJSON = true;
-            } catch (e) {
-                // Nie jest poprawnym JSON
-            }
-
-            // Jeśli parsuje się jako JSON, zawsze pobierz jako .json
-            if (isValidJSON && parsedJSON !== null) {
-                const formattedJSON = formatCheckbox.checked 
-                    ? JSON.stringify(parsedJSON, null, 2)
-                    : JSON.stringify(parsedJSON);
-                
-                let filename = filenameInput.value.trim();
-                if (isN8NWorkflow(parsedJSON) && parsedJSON.name) {
-                    filename = parsedJSON.name.replace(/[^a-z0-9_-]/gi, '_');
-                }
-                if (!filename) filename = 'data';
-                
-                const blob = new Blob([formattedJSON], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename + '.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                showMessage('✓ Plik JSON został pobrany!');
-                jsonInput.classList.remove('error');
-                return;
-            }
-
-            // Jeśli nie jest poprawnym JSON, sprawdź typ
-            const detection = detectContentType(content);
-            
-            // Obsługa JavaScript (tylko gdy tryb n8n wyłączony)
-            if (detection.type === 'js') {
-                let filename = filenameInput.value.trim() || 'code';
-                filename = filename.replace(/[^a-z0-9_-]/gi, '_');
-                if (!filename) filename = 'code';
-                
-                const blob = new Blob([content], { type: 'text/javascript' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename + '.js';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showMessage('✓ Kod JavaScript został pobrany jako plik .js!');
-                jsonInput.classList.remove('error');
-                return;
-            }
-
-            // Nieznany typ - spróbuj jako tekst
-            let filename = filenameInput.value.trim() || 'content';
-            filename = filename.replace(/[^a-z0-9_-]/gi, '_');
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename + '.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showMessage('✓ Zawartość została pobrana jako plik tekstowy!');
-        }
-
-        function copyToClipboard() {
-            const content = jsonInput.value.trim();
-            
-            if (!content) {
-                showMessage('Pole jest puste', true);
-                return;
-            }
-
-            let textToCopy = content;
-            let typeLabel = 'Zawartość';
-
-            // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
-            try {
-                const parsed = JSON.parse(content);
-                // Jeśli parsuje się jako JSON, formatuj jeśli checkbox jest zaznaczony
-                if (formatCheckbox.checked) {
-                    textToCopy = JSON.stringify(parsed, null, 2);
-                }
-                typeLabel = 'JSON';
-            } catch (jsonError) {
-                // Nie jest poprawnym JSON - sprawdź typ
-                const detection = detectContentType(content);
-                typeLabel = detection.type === 'js' ? 'Kod JavaScript' : 'Zawartość';
-            }
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showMessage(`✓ ${typeLabel} skopiowany do schowka!`);
-            }).catch(() => {
-                // Fallback dla starszych przeglądarek
-                const textarea = document.createElement('textarea');
-                textarea.value = textToCopy;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showMessage(`✓ ${typeLabel} skopiowany do schowka!`);
-            });
-        }
-
-        function loadFile(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const content = e.target.result;
-                    const isJSFile = file.name.toLowerCase().endsWith('.js');
-                    
-                    // Resetuj oryginał przed wczytaniem nowego pliku
-                    originalJSONBeforeStructure = null;
-                    document.getElementById('restoreBtn').style.display = 'none';
-                    
-                    // Jeśli to plik JS, po prostu wczytaj
-                    if (isJSFile) {
-                        jsonInput.value = content;
-                        filenameInput.value = file.name.replace(/\.js$/i, '') || 'code';
-                        updateContentTypeIndicator();
-                        saveToLocalStorage();
-                        showMessage('✓ Plik JavaScript wczytany pomyślnie!');
-                        jsonInput.classList.remove('error');
-                        return;
-                    }
-                    
-                    // Spróbuj jako JSON
-                    try {
-                        const parsed = JSON.parse(content);
-                        jsonInput.value = formatCheckbox.checked 
-                            ? JSON.stringify(parsed, null, 2)
-                            : content;
-                        
-                        // Ustaw nazwę pliku na podstawie workflow n8n
-                        if (isN8NWorkflow(parsed) && parsed.name) {
-                            filenameInput.value = parsed.name.replace(/[^a-z0-9_-]/gi, '_');
-                        } else {
-                            filenameInput.value = file.name.replace(/\.(json|txt)$/i, '') || 'data';
-                        }
-                        
-                        updateStats();
-                        updateContentTypeIndicator();
-                        saveToLocalStorage();
-                        showMessage('✓ Plik JSON wczytany pomyślnie!');
-                        jsonInput.classList.remove('error');
-                    } catch (jsonErr) {
-                        // Jeśli nie jest JSON, wczytaj jako tekst (może być JS)
-                        jsonInput.value = content;
-                        filenameInput.value = file.name.replace(/\.[^.]+$/i, '') || 'data';
-                        updateContentTypeIndicator();
-                        saveToLocalStorage();
-                        showMessage('✓ Plik wczytany jako tekst!');
-                        jsonInput.classList.remove('error');
-                    }
-                } catch (err) {
-                    showMessage('Błąd: ' + err.message, true);
-                    jsonInput.classList.add('error');
-                }
-            };
-            reader.onerror = () => {
-                showMessage('Błąd podczas wczytywania pliku', true);
-            };
-            reader.readAsText(file);
-        }
-
-        // Drag & Drop
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                const isJSON = file.name.toLowerCase().endsWith('.json') || file.type.includes('json');
-                const isJS = file.name.toLowerCase().endsWith('.js') || file.type.includes('javascript');
-                if (isJSON || isJS || file.type === '' || file.type === 'text/plain') {
-                    loadFile(file);
-                } else {
-                    showMessage('Proszę wybrać plik JSON lub JavaScript', true);
-                }
-            }
-        });
-
-        // Wczytywanie pliku przez input
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                loadFile(file);
-            }
-        });
-
-        function clearInput() {
-            jsonInput.value = '';
-            filenameInput.value = 'data';
-            message.className = 'message';
-            jsonInput.classList.remove('error');
-            updateContentTypeIndicator();
-            updateStats();
-            originalJSONBeforeStructure = null;
-            document.getElementById('restoreBtn').style.display = 'none';
-            if (autoSaveCheckbox.checked) {
-                localStorage.removeItem('jsonEditor_data');
-            }
-            jsonInput.focus();
-        }
-
-        // Auto-walidacja i statystyki podczas pisania
-        let validationTimeout;
-        let lastContentLength = 0;
-        jsonInput.addEventListener('input', () => {
-            clearTimeout(validationTimeout);
-            jsonInput.classList.remove('error');
-            message.className = 'message';
-            
-            // Resetuj oryginał jeśli zawartość zmieniła się drastycznie (np. wklejenie nowego JSON)
-            const currentLength = jsonInput.value.length;
-            if (Math.abs(currentLength - lastContentLength) > 100) {
-                // Duża zmiana - prawdopodobnie wklejono nowy JSON
-                originalJSONBeforeStructure = null;
-                document.getElementById('restoreBtn').style.display = 'none';
-            }
-            lastContentLength = currentLength;
-            
-            updateContentTypeIndicator();
-            updateStats();
-            saveToLocalStorage();
-        });
-
-        // Aktualizuj statystyki przy zmianie opcji formatowania
-        formatCheckbox.addEventListener('change', () => {
-            const content = jsonInput.value.trim();
-            if (content) {
-                // NAJPIERW: Spróbuj sparsować jako JSON (priorytet dla JSON)
-                try {
-                    const parsed = JSON.parse(content);
-                    // Jeśli parsuje się jako JSON, formatuj/minifikuj
-                    jsonInput.value = formatCheckbox.checked 
-                        ? JSON.stringify(parsed, null, 2)
-                        : JSON.stringify(parsed);
-                    updateStats();
-                    updateContentTypeIndicator();
-                    saveToLocalStorage();
-                } catch (e) {
-                    // Jeśli nie można sparsować jako JSON, nie rób nic (może być JS lub inny typ)
-                    // Nie pokazuj błędu - użytkownik może mieć niepoprawny JSON w trakcie edycji
-                }
-            }
-        });
-
-        // Enter + Ctrl/Cmd do pobrania
-        jsonInput.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                downloadJSON();
-            }
-        });
+        jsonInput.addEventListener('input', updateStats);
     </script>
 </body>
 </html>
-
