@@ -996,8 +996,18 @@
                         // Sprawdź czy jest podwójny klucz "conditions" w obiekcie
                         // Jeśli value ma "options" i również tablicę pod kluczem "conditions", napraw to
                         if (value.options && Array.isArray(value.conditions)) {
+                            // Napraw: zmień "conditions" (tablica) na "values"
+                            // UWAGA: n8n wymaga "option" (pojedynczy) nie "options" (mnożna)!
                             result[key] = {
-                                options: value.options,
+                                option: value.options,  // Zmienione z "options" na "option"
+                                values: value.conditions
+                            };
+                            continue;
+                        }
+                        // Jeśli już ma "option" (pojedynczy) i tablicę "conditions", zmień tylko "conditions" na "values"
+                        if (value.option && Array.isArray(value.conditions)) {
+                            result[key] = {
+                                option: value.option,
                                 values: value.conditions
                             };
                             continue;
