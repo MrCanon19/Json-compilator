@@ -976,6 +976,41 @@
             }, 10);
         }
 
+        function fixDuplicateKeys(obj) {
+            if (obj === null || typeof obj !== 'object') {
+                return obj;
+            }
+            
+            if (Array.isArray(obj)) {
+                return obj.map(item => fixDuplicateKeys(item));
+            }
+            
+            const result = {};
+            
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    const value = fixDuplicateKeys(obj[key]);
+                    
+                    // Specjalna obsługa dla n8n switch node: jeśli "conditions" zawiera zarówno "options" jak i tablicę "conditions"
+                    if (key === 'conditions' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                        // Sprawdź czy jest podwójny klucz "conditions" w obiekcie
+                        // Jeśli value ma "options" i również tablicę pod kluczem "conditions", napraw to
+                        if (value.options && Array.isArray(value.conditions)) {
+                            result[key] = {
+                                options: value.options,
+                                values: value.conditions
+                            };
+                            continue;
+                        }
+                    }
+                    
+                    result[key] = value;
+                }
+            }
+            
+            return result;
+        }
+
         function fixJSON(jsonText, wasValid = false) {
             let fixed = jsonText;
             const fixes = [];
@@ -983,7 +1018,18 @@
 
             if (wasValid) {
             try {
-                const alreadyParsed = JSON.parse(fixed);
+                let alreadyParsed = JSON.parse(fixed);
+                
+                // Napraw podwójne klucze również dla poprawnych JSON
+                const parsedBeforeFix = JSON.stringify(alreadyParsed);
+                alreadyParsed = fixDuplicateKeys(alreadyParsed);
+                const parsedAfterFix = JSON.stringify(alreadyParsed);
+                
+                if (parsedBeforeFix !== parsedAfterFix) {
+                    fixes.push('podwójne klucze (n8n switch node)');
+                    fixCount++;
+                }
+                
                 fixed = formatCheckbox.checked 
                     ? JSON.stringify(alreadyParsed, null, 2)
                     : JSON.stringify(alreadyParsed);
@@ -1243,7 +1289,18 @@
             }
 
             try {
-                const parsed = JSON.parse(fixed);
+                let parsed = JSON.parse(fixed);
+                
+                // Napraw podwójne klucze w strukturze n8n (szczególnie switch node)
+                const parsedBeforeFix = JSON.stringify(parsed);
+                parsed = fixDuplicateKeys(parsed);
+                const parsedAfterFix = JSON.stringify(parsed);
+                
+                if (parsedBeforeFix !== parsedAfterFix) {
+                    fixes.push('podwójne klucze (n8n switch node)');
+                    fixCount++;
+                }
+                
                         fixed = formatCheckbox.checked 
                             ? JSON.stringify(parsed, null, 2)
                             : JSON.stringify(parsed);
