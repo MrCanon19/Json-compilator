@@ -1040,9 +1040,18 @@
                 jsonInput.classList.remove('error');
                 updateStats();
                 saveToLocalStorage();
+                
+                if (fixCount > 0) {
+                    const fixText = fixCount === 1 ? 'problem' : 'problemów';
+                    const fixesText = fixes.length > 0 ? ': ' + fixes.join(', ') : '';
+                    showMessage(`Naprawiono ${fixCount} ${fixText}${fixesText}.`);
+                    showFeedback(`Naprawiono ${fixCount} ${fixText}${fixesText}.`);
+                    showStatusBar(`Naprawiono ${fixCount} ${fixText}.`, 'success');
+                } else {
                     showMessage('JSON był już poprawny - sformatowano');
                     showFeedback('JSON był już poprawny - sformatowano');
                     showStatusBar('JSON był poprawny – brak zmian.', 'info');
+                }
                     return;
             } catch (e) {
                     // Kontynuuj naprawę
