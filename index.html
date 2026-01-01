@@ -1296,14 +1296,27 @@
 
             try {
                 JSON.parse(content);
+                
+                const defaultName = 'workflow.json';
+                const fileName = prompt('Podaj nazwę pliku:', defaultName);
+                
+                if (fileName === null) {
+                    return;
+                }
+                
+                const sanitizedFileName = fileName.trim() || defaultName;
+                const finalFileName = sanitizedFileName.endsWith('.json') 
+                    ? sanitizedFileName 
+                    : sanitizedFileName + '.json';
+                
                 const blob = new Blob([content], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-                a.download = 'workflow.json';
+                a.download = finalFileName;
             a.click();
             URL.revokeObjectURL(url);
-                showMessage('Pobrano plik');
+                showMessage('Pobrano plik: ' + finalFileName);
             } catch (e) {
                 showMessage('Błąd: niepoprawny JSON', true);
             }
