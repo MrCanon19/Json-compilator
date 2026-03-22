@@ -1,5 +1,7 @@
 # JSON Sanitizer
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-json--compilator.netlify.app-brightgreen)](https://json-compilator.netlify.app)
+
 Narzędzie webowe do naprawy, formatowania i walidacji JSON — szczególnie przydatne przy pracy z workflow n8n.
 
 ## Funkcje
@@ -23,8 +25,6 @@ Single-file HTML application — brak zależności, brak buildu. Otwórz `index.
 ```bash
 # Lokalnie — otwórz plik w przeglądarce
 open index.html
-
-# Lub przez GitHub Pages (po konfiguracji)
 ```
 
 ## Struktura projektu
