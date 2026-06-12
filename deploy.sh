@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Wdrożenie n8n Helper na GitHub Pages"
+echo "🚀 Wdrożenie JSON Compilator na GitHub Pages"
 echo "========================================"
 echo ""
 
@@ -53,7 +53,7 @@ git add index.html
 
 echo ""
 echo "💾 Tworzę commit..."
-git commit -m "Dodano n8n Helper - JSON editor" || echo "⚠️  Brak zmian do commitowania"
+git commit -m "Aktualizacja JSON Compilator" || echo "⚠️  Brak zmian do commitowania"
 
 echo ""
 echo "📤 Wrzucam na GitHub..."

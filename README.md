@@ -1,4 +1,4 @@
-# JSON Sanitizer
+# JSON Compilator
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-json--compilator.netlify.app-brightgreen)](https://json-compilator.netlify.app)
 

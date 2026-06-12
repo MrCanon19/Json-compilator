@@ -33,7 +33,7 @@ cp "/Users/michalmarini/Cursor-pliki/Json compilator/index.html" .
 git add index.html
 
 # Zrób commit
-git commit -m "Dodano n8n Helper - JSON editor"
+git commit -m "Dodano JSON Compilator - JSON editor"
 
 # Wrzuć na GitHub
 git push origin main
@@ -113,7 +113,7 @@ Jeśli nie chcesz używać git z linii poleceń:
 
 1. Otwórz link: https://mrcanon19.github.io/Json-compilator/
 2. Sprawdź czy strona się ładuje
-3. Sprawdź czy widzisz "n8n Helper" i pole do edycji JSON
+3. Sprawdź czy widzisz "JSON Compilator" i pole do edycji JSON
 4. Sprawdź czy widzisz komunikat: "🔒 Przetwarzane lokalnie w przeglądarce"
 
 ---
